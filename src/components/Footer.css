@@ -1,0 +1,124 @@
+.footer {
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.footer-inner {
+  padding-top: 4rem;
+  padding-bottom: 2rem;
+}
+
+.footer-top {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4rem;
+  margin-bottom: 3rem;
+}
+
+.footer-logo {
+  font-family: var(--font-mono);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
+
+.logo-bracket { color: var(--accent); }
+
+.footer-tagline {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  max-width: 260px;
+  line-height: 1.6;
+}
+
+.footer-links {
+  display: flex;
+  gap: 4rem;
+}
+
+.footer-link-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.footer-link-title {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.25rem;
+}
+
+.footer-link {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: none;
+  transition: color 0.2s, transform 0.2s;
+  padding: 0;
+}
+
+.footer-link:hover {
+  color: var(--accent);
+  transform: translateX(4px);
+}
+
+.footer-link.no-link { pointer-events: none; }
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-copy {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.footer-heart { color: var(--accent3); }
+
+.footer-stack {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.footer-sep { color: var(--accent); opacity: 0.5; }
+
+.footer-glow {
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  height: 200px;
+  background: radial-gradient(ellipse, rgba(0,212,255,0.08), transparent 70%);
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .footer-top { grid-template-columns: 1fr; gap: 2rem; }
+  .footer-links { flex-direction: column; gap: 2rem; }
+  .footer-bottom { flex-direction: column; align-items: flex-start; }
+}
