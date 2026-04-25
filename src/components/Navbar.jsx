@@ -50,15 +50,6 @@ export default function Navbar() {
               {link}
             </button>
           ))}
-          <a
-            href="/Abaid-ul-Rehman-CV.pdf"
-            download
-            className="nav-cta"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Resume ↓
-          </a>
         </div>
 
         <button
