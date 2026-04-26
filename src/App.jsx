@@ -55,18 +55,6 @@ export default function App() {
         <Contact />
       </main>
       <Footer />
-
-      {/* Admin Panel */}
-      {showAdmin && <Admin onClose={closeAdmin} />}
-
-      {/* Admin trigger button - subtle */}
-      <button
-        className="admin-trigger"
-        onClick={() => setShowAdmin(true)}
-        title="Open Admin Panel (Ctrl+Shift+A)"
-      >
-        ⚙️
-      </button>
     </div>
   )
 }
