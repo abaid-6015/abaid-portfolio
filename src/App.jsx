@@ -9,7 +9,7 @@ import Experience from './components/Experience'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
 import Loader from './components/Loader'
-import Admin from './components/Admin'
+// import Admin from './components/Admin'
 import './App.css'
 
 export default function App() {
@@ -33,12 +33,6 @@ export default function App() {
     window.addEventListener('keydown', down)
     return () => window.removeEventListener('keydown', down)
   }, [])
-
-  const closeAdmin = () => {
-    // Dispatch so all sections re-read from store
-    window.dispatchEvent(new Event('portfolio-data-updated'))
-    setShowAdmin(false)
-  }
 
   if (loading) return <Loader />
 
