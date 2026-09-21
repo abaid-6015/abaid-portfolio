@@ -1,42 +1,28 @@
-.cursor-dot {
-  position: fixed;
-  width: 6px;
-  height: 6px;
-  background: var(--accent);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 99999;
-  transform: translate(-50%, -50%);
-  transition: width 0.2s, height 0.2s, background 0.2s;
-  box-shadow: 0 0 8px var(--accent);
+.cur-dot {
+  position:fixed; top:-5px; left:-5px;
+  width:10px; height:10px;
+  background:var(--cyan); border-radius:50%;
+  pointer-events:none; z-index:99999;
+  will-change:transform;
+  transition:opacity .2s;
+  box-shadow: 0 0 8px var(--cyan), 0 0 20px rgba(0,229,255,0.4);
 }
+.cur-dot.hide { opacity:0; }
 
-.cursor-ring {
-  position: fixed;
-  width: 36px;
-  height: 36px;
-  border: 1.5px solid rgba(0,212,255,0.5);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 99998;
-  transform: translate(-50%, -50%);
-  transition: width 0.3s, height 0.3s, border-color 0.3s;
+.cur-ring {
+  position:fixed; top:-22px; left:-22px;
+  width:44px; height:44px;
+  border:1.5px solid rgba(91,79,255,0.6); border-radius:50%;
+  pointer-events:none; z-index:99998;
+  will-change:transform;
+  transition: width .35s cubic-bezier(.34,1.56,.64,1),
+              height .35s cubic-bezier(.34,1.56,.64,1),
+              top .35s, left .35s,
+              background .25s, border-color .25s;
 }
-
-.cursor-dot.hover {
-  width: 12px;
-  height: 12px;
-  background: var(--accent2);
-  box-shadow: 0 0 15px var(--accent2);
+.cur-ring.big {
+  width:70px; height:70px; top:-35px; left:-35px;
+  border-color:var(--indigo);
+  background: rgba(91,79,255,0.07);
 }
-
-.cursor-ring.hover {
-  width: 56px;
-  height: 56px;
-  border-color: rgba(121, 40, 202, 0.6);
-}
-
-@media (pointer: coarse) {
-  .cursor-dot, .cursor-ring { display: none; }
-  body { cursor: auto; }
-}
+@media(hover:none){ .cur-dot,.cur-ring{display:none} body{cursor:auto} }

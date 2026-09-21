@@ -9,6 +9,7 @@ export const DEFAULT_DATA = {
         { name: 'HTML / CSS', level: 95 },
         { name: 'React Native', level: 82 },
         { name: 'Three.js', level: 70 },
+        { name: 'Figma', level: 85 },
       ]
     },
     {
@@ -31,10 +32,11 @@ export const DEFAULT_DATA = {
     {
       id: 's4', category: 'Tools & Design', icon: '🛠️',
       items: [
-        { name: 'Figma', level: 85 },
         { name: 'WordPress', level: 90 },
         { name: 'Git / GitHub', level: 82 },
         { name: 'Cisco Packet Tracer', level: 70 },
+        { name: 'Unity (Game Dev)', level: 65 },
+        { name: 'Lens Studio (AR)', level: 60 },
       ]
     },
   ],
@@ -43,7 +45,7 @@ export const DEFAULT_DATA = {
     {
       id: 'p1',
       title: 'Restaurant Reservation System',
-      description: 'Full-stack restaurant management platform with real-time table booking, order management, and customer notifications. Built as both a web app and mobile app.',
+      description: 'Full-stack restaurant management platform with real-time table booking, order management, and customer notifications. Built as both a web app (React.js) and mobile app (React Native).',
       tech: ['React.js', 'React Native', 'MongoDB', 'Firebase', 'Node.js', 'Express'],
       type: 'Web + Mobile App',
       icon: '🍽️',
@@ -63,33 +65,33 @@ export const DEFAULT_DATA = {
       color: '#ffd166',
       features: ['Stock tracking', 'Supplier management', 'Auto-reorder alerts', 'PDF reports'],
       featured: true,
-      github: '',
+      github: 'https://github.com/abaid-6015',
       live: '',
     },
     {
       id: 'p3',
       title: '3D Home Design Architecture',
-      description: 'Interactive 3D architectural visualization tool built with Three.js, allowing users to design and explore home layouts in real-time 3D environment.',
+      description: 'Interactive 3D architectural visualization tool built with Three.js, allowing users to design and explore home layouts in real-time 3D environment with MySQL backend.',
       tech: ['Three.js', 'JavaScript', 'MySQL', 'CSS3'],
       type: 'Web 3D Application',
       icon: '🏗️',
       color: '#06d6a0',
       features: ['3D rendering', 'Interactive design', 'Room planner', 'Material preview'],
       featured: true,
-      github: '',
+      github: 'https://github.com/abaid-6015',
       live: '',
     },
     {
       id: 'p4',
       title: 'Inventory System (Web)',
-      description: 'Web-based inventory management system built with PHP and MySQL featuring a clean dashboard, product CRUD, and reporting functionality.',
+      description: 'Web-based inventory management system built with PHP and MySQL featuring a clean dashboard, product CRUD operations, and reporting functionality.',
       tech: ['HTML', 'CSS', 'PHP', 'MySQL'],
       type: 'Web Application',
       icon: '🗂️',
       color: '#4cc9f0',
       features: ['CRUD operations', 'Search & filter', 'Reports', 'User auth'],
       featured: false,
-      github: '',
+      github: 'https://github.com/abaid-6015',
       live: '',
     },
     {
@@ -107,19 +109,32 @@ export const DEFAULT_DATA = {
     },
     {
       id: 'p6',
-  title: 'Sight & Might — Unity Game',
-  description: 'Third-person action game built in Unity featuring a Player and Alien character on terrain with animals. Developed as a course project showcasing 3D game development skills.',
-  tech: ['Unity', 'C#', 'Game Design', '3D Modeling'],
-  type: 'Game Development',
-  icon: '🎮',
-  color: '#ff0080',
-  features: ['3rd person gameplay', 'Character AI', 'Terrain design', 'Physics system'],
-  featured: true,
-  github: 'https://github.com/abaid-6015',
-  live: '',
+      title: 'Sight & Might — Unity Game',
+      description: 'Third-person action game built in Unity featuring a Player and Alien character on terrain with animals. Developed as a course project showcasing 3D game development skills.',
+      tech: ['Unity', 'C#', 'Game Design', '3D Modeling'],
+      type: 'Game Development',
+      icon: '🎮',
+      color: '#ff0080',
+      features: ['3rd person gameplay', 'Character AI', 'Terrain design', 'Physics system'],
+      featured: true,
+      github: 'https://github.com/abaid-6015',
+      live: '',
     },
     {
       id: 'p7',
+      title: 'Project Figma Prototypes',
+      description: 'High-fidelity UI/UX prototypes for all major projects including interactive wireframes, design systems, component libraries, and user flow diagrams.',
+      tech: ['Figma', 'UI/UX Design', 'Prototyping', 'Design Systems'],
+      type: 'UI/UX Design',
+      icon: '🎨',
+      color: '#f89820',
+      features: ['Interactive prototypes', 'Design system', 'User flows', 'Component library'],
+      featured: false,
+      github: '',
+      live: '',
+    },
+    {
+      id: 'p8',
       title: 'Project Documentation Suite',
       description: 'Comprehensive technical documentation for all projects including SRS documents, architecture diagrams, API docs, and user manuals following industry standards.',
       tech: ['Technical Writing', 'SRS', 'UML', 'MS Word'],
@@ -162,6 +177,7 @@ export const DEFAULT_DATA = {
         'Created responsive interfaces using React, HTML, and modern CSS techniques',
         'Built cross-platform mobile apps using React Native with integrated backend APIs',
         'Designed 3D interactive applications using Three.js and MySQL database integration',
+        'Developed Unity 3D game (Sight & Might) with character controls, terrain, and AI',
       ],
     },
     {
@@ -225,79 +241,28 @@ const uid = () => Math.random().toString(36).slice(2, 9)
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
-// SKILLS
 export const getSkills = () => load(KEYS.skills, DEFAULT_DATA.skills)
 export const saveSkills = (data) => save(KEYS.skills, data)
+export const addSkillGroup = (group) => { const all = getSkills(); const next = [...all, { ...group, id: uid() }]; saveSkills(next); return next }
+export const updateSkillGroup = (id, group) => { const next = getSkills().map(g => g.id === id ? { ...g, ...group } : g); saveSkills(next); return next }
+export const deleteSkillGroup = (id) => { const next = getSkills().filter(g => g.id !== id); saveSkills(next); return next }
 
-export const addSkillGroup = (group) => {
-  const all = getSkills()
-  const next = [...all, { ...group, id: uid() }]
-  saveSkills(next); return next
-}
-export const updateSkillGroup = (id, group) => {
-  const next = getSkills().map(g => g.id === id ? { ...g, ...group } : g)
-  saveSkills(next); return next
-}
-export const deleteSkillGroup = (id) => {
-  const next = getSkills().filter(g => g.id !== id)
-  saveSkills(next); return next
-}
-
-// PROJECTS
 export const getProjects = () => load(KEYS.projects, DEFAULT_DATA.projects)
 export const saveProjects = (data) => save(KEYS.projects, data)
+export const addProject = (proj) => { const all = getProjects(); const next = [...all, { ...proj, id: uid() }]; saveProjects(next); return next }
+export const updateProject = (id, proj) => { const next = getProjects().map(p => p.id === id ? { ...p, ...proj } : p); saveProjects(next); return next }
+export const deleteProject = (id) => { const next = getProjects().filter(p => p.id !== id); saveProjects(next); return next }
 
-export const addProject = (proj) => {
-  const all = getProjects()
-  const next = [...all, { ...proj, id: uid() }]
-  saveProjects(next); return next
-}
-export const updateProject = (id, proj) => {
-  const next = getProjects().map(p => p.id === id ? { ...p, ...proj } : p)
-  saveProjects(next); return next
-}
-export const deleteProject = (id) => {
-  const next = getProjects().filter(p => p.id !== id)
-  saveProjects(next); return next
-}
-
-// EXPERIENCES
 export const getExperiences = () => load(KEYS.experiences, DEFAULT_DATA.experiences)
 export const saveExperiences = (data) => save(KEYS.experiences, data)
+export const addExperience = (exp) => { const all = getExperiences(); const next = [...all, { ...exp, id: uid() }]; saveExperiences(next); return next }
+export const updateExperience = (id, exp) => { const next = getExperiences().map(e => e.id === id ? { ...e, ...exp } : e); saveExperiences(next); return next }
+export const deleteExperience = (id) => { const next = getExperiences().filter(e => e.id !== id); saveExperiences(next); return next }
 
-export const addExperience = (exp) => {
-  const all = getExperiences()
-  const next = [...all, { ...exp, id: uid() }]
-  saveExperiences(next); return next
-}
-export const updateExperience = (id, exp) => {
-  const next = getExperiences().map(e => e.id === id ? { ...e, ...exp } : e)
-  saveExperiences(next); return next
-}
-export const deleteExperience = (id) => {
-  const next = getExperiences().filter(e => e.id !== id)
-  saveExperiences(next); return next
-}
-
-// EDUCATION
 export const getEducation = () => load(KEYS.education, DEFAULT_DATA.education)
 export const saveEducation = (data) => save(KEYS.education, data)
+export const addEducation = (edu) => { const all = getEducation(); const next = [...all, { ...edu, id: uid() }]; saveEducation(next); return next }
+export const updateEducation = (id, edu) => { const next = getEducation().map(e => e.id === id ? { ...e, ...edu } : e); saveEducation(next); return next }
+export const deleteEducation = (id) => { const next = getEducation().filter(e => e.id !== id); saveEducation(next); return next }
 
-export const addEducation = (edu) => {
-  const all = getEducation()
-  const next = [...all, { ...edu, id: uid() }]
-  saveEducation(next); return next
-}
-export const updateEducation = (id, edu) => {
-  const next = getEducation().map(e => e.id === id ? { ...e, ...edu } : e)
-  saveEducation(next); return next
-}
-export const deleteEducation = (id) => {
-  const next = getEducation().filter(e => e.id !== id)
-  saveEducation(next); return next
-}
-
-// RESET ALL
-export const resetAll = () => {
-  Object.values(KEYS).forEach(k => localStorage.removeItem(k))
-}
+export const resetAll = () => { Object.values(KEYS).forEach(k => localStorage.removeItem(k)) }

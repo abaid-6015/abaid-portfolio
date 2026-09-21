@@ -1,139 +1,162 @@
-import React, { useRef, useState, useEffect } from 'react'
-import { getProjects } from '../store/dataStore'
+import React, { useState, useRef, useEffect } from 'react'
+import { FiGithub, FiExternalLink } from 'react-icons/fi'
+import { SiReact, SiMongodb, SiNodedotjs, SiMysql, SiFirebase, SiUnity, SiWordpress, SiFigma, SiPhp } from 'react-icons/si'
+import { DiJava } from 'react-icons/di'
+import { HiOutlineCube, HiOutlineGlobeAlt, HiOutlineDeviceMobile, HiOutlineDesktopComputer, HiOutlinePencil, HiOutlineDocumentText, HiOutlineServer, HiOutlineAcademicCap } from 'react-icons/hi'
 import './Projects.css'
 
-function useInView(threshold = 0.08) {
-  const ref = useRef(null)
-  const [inView, setInView] = useState(false)
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setInView(true) }, { threshold })
-    if (ref.current) obs.observe(ref.current)
-    return () => obs.disconnect()
-  }, [threshold])
-  return [ref, inView]
-}
+function useInView(t=0.05){ const r=useRef(null); const [v,setV]=useState(false); useEffect(()=>{ const o=new IntersectionObserver(([e])=>{ if(e.isIntersecting)setV(true) },{threshold:t}); if(r.current)o.observe(r.current); return()=>o.disconnect() },[t]); return[r,v] }
 
-function ProjectCard({ project, index, inView }) {
-  const [hovered, setHovered] = useState(false)
+const TECH_ICONS = { 'React.js':SiReact, 'MongoDB':SiMongodb, 'Node.js':SiNodedotjs, 'MySQL':SiMysql, 'Firebase':SiFirebase, 'Unity':SiUnity, 'WordPress':SiWordpress, 'Figma':SiFigma, 'PHP':SiPhp, 'Java':DiJava, 'React Native':SiReact }
+
+const PROJECTS = [
+  {
+    id:'p1', span:'large', featured:true,
+    Icon:HiOutlineGlobeAlt,
+    title:'Restaurant Reservation System',
+    desc:'Full-stack restaurant management platform with real-time table booking, order management, and push notifications. Built as web app (React.js) and mobile app (React Native) sharing a common backend.',
+    tech:['React.js','React Native','MongoDB','Firebase','Node.js'],
+    color:'#5B4FFF',
+    github:'https://github.com/abaid-6015',
+    live:'https://restaurant-reservation-system-react-seven.vercel.app/home',
+    tag:'Featured · Live',
+  },
+  {
+    id:'p2', span:'normal',
+    Icon:HiOutlineDesktopComputer,
+    title:'Inventory Management — Java',
+    desc:'Desktop application for comprehensive inventory tracking with MySQL. Handles stock, suppliers, and PDF report generation.',
+    tech:['Java','MySQL'],
+    color:'#FF9F0A',
+    github:'https://github.com/abaid-6015',
+    tag:'Desktop App',
+  },
+  {
+    id:'p3', span:'normal',
+    Icon:HiOutlineCube,
+    title:'3D Home Design Architecture',
+    desc:'Interactive 3D architectural visualization tool. Users design and explore home layouts in real-time 3D with MySQL backend.',
+    tech:['Three.js','JavaScript','MySQL'],
+    color:'#00E5FF',
+    github:'https://github.com/abaid-6015',
+    tag:'WebGL · 3D',
+  },
+  {
+    id:'p6', span:'normal', featured:true,
+    Icon:HiOutlineCube,
+    title:'Sight & Might — Unity 3D Game',
+    desc:'Third-person action game featuring Player and Alien characters on terrain with AI-controlled animals. Complete game loop with physics and custom 3D environment.',
+    tech:['Unity','C#'],
+    color:'#FF375F',
+    github:'https://github.com/abaid-6015',
+    tag:'Game Dev',
+  },
+  {
+    id:'p4', span:'normal',
+    Icon:HiOutlineServer,
+    title:'Inventory System — Web',
+    desc:'Web-based inventory management with PHP and MySQL. Clean dashboard, CRUD operations, and user authentication.',
+    tech:['PHP','MySQL','HTML5','CSS3'],
+    color:'#30D158',
+    github:'https://github.com/abaid-6015',
+    tag:'Web App',
+  },
+  {
+    id:'p5', span:'normal',
+    Icon:HiOutlineAcademicCap,
+    title:'University Network Topology',
+    desc:'Complete campus network topology designed in Cisco Packet Tracer — VLANs, subnetting, OSPF routing, and security policies.',
+    tech:['Cisco Packet Tracer','VLAN','OSPF'],
+    color:'#8b5cf6',
+    tag:'Networking',
+  },
+  {
+    id:'p7', span:'normal',
+    Icon:HiOutlinePencil,
+    title:'UI/UX Figma Prototypes',
+    desc:'High-fidelity interactive prototypes for all major projects — design systems, user flows, and component libraries.',
+    tech:['Figma'],
+    color:'#FF9F0A',
+    tag:'Design',
+  },
+  {
+    id:'wp1', span:'normal',
+    Icon:HiOutlineGlobeAlt,
+    title:'WordPress Client Sites',
+    desc:'Responsive business websites built with WordPress, custom CSS, and plugin integrations including an ad-serving platform.',
+    tech:['WordPress','PHP','CSS3'],
+    color:'#21759b',
+    tag:'WordPress · Client Work',
+  },
+]
+
+function ProjectCard({ p, inView, i }) {
+  const [hov, setHov] = useState(false)
+  const techIcons = p.tech.map(t => ({ name:t, Icon:TECH_ICONS[t] })).filter(x=>x.Icon)
   return (
-    <div className={`project-card card ${project.featured ? 'featured' : ''} ${inView ? 'visible' : ''}`}
-      style={{ '--proj-color': project.color, animationDelay: `${index * 0.1}s` }}
-      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <div className="proj-header">
-        <div className="proj-id">{String(index + 1).padStart(2, '0')}</div>
-        <div className="proj-icon" style={{ background: `${project.color}18`, border: `1px solid ${project.color}35` }}>
-          {project.icon}
+    <div className={`bento proj-card proj-card--${p.span} ${p.featured?'proj-card--feat':''}
+      ${inView?'proj-card--in':''}`}
+      style={{ '--pc':p.color, animationDelay:`${i*.07}s` }}
+      onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}>
+
+      <div className="proj-card__glow" style={{opacity:hov?.18:0}}/>
+
+      <div className="proj-card__top">
+        <div className="proj-card__icon" style={{background:`${p.color}18`,border:`1px solid ${p.color}30`}}>
+          <p.Icon size={20} style={{color:p.color}}/>
         </div>
-        <div className="proj-type-badge" style={{ color: project.color, background: `${project.color}12` }}>
-          {project.type}
-        </div>
+        <span className="proj-card__tag" style={{color:p.color,background:`${p.color}12`}}>{p.tag}</span>
       </div>
-      <h3 className="proj-title">{project.title}</h3>
-      <p className="proj-desc">{project.description}</p>
-      <div className="proj-features">
-        {(project.features || []).map((f, i) => (
-          <span key={i} className="proj-feature">
-            <span className="feature-dot" style={{ background: project.color }} />{f}
+
+      <h3 className="proj-card__title">{p.title}</h3>
+      <p className="proj-card__desc">{p.desc}</p>
+
+      <div className="proj-card__tech">
+        {techIcons.slice(0,5).map(({name,Icon})=>(
+          <span key={name} className="proj-card__tech-item" title={name} style={{color:p.color}}>
+            <Icon size={14}/>
           </span>
         ))}
+        {p.tech.filter(t=>!TECH_ICONS[t]).map(t=>(
+          <span key={t} className="chip" style={{fontSize:'.64rem',padding:'.2rem .5rem'}}>{t}</span>
+        ))}
       </div>
-      <div className="proj-tech">
-        {(project.tech || []).map((t, i) => <span key={i} className="tech-tag">{t}</span>)}
-      </div>
-      <div className="proj-links">
-        {project.github && (
-          <a href={project.github} target="_blank" rel="noopener noreferrer" className="proj-link">
-            <span>🐙</span> Code
+
+      <div className="proj-card__links">
+        {p.github && (
+          <a href={p.github} target="_blank" rel="noopener noreferrer" className="proj-card__link">
+            <FiGithub size={14}/> Code
           </a>
         )}
-        {project.live && (
-          <a href={project.live} target="_blank" rel="noopener noreferrer" className="proj-link live-link"
-            style={{ background: `${project.color}18`, borderColor: `${project.color}40`, color: project.color }}>
-            <span>🚀</span> Live Demo ↗
+        {p.live && (
+          <a href={p.live} target="_blank" rel="noopener noreferrer" className="proj-card__link proj-card__link--live"
+            style={{color:p.color,borderColor:`${p.color}50`,background:`${p.color}0e`}}>
+            <FiExternalLink size={14}/> Live Demo
           </a>
         )}
       </div>
-      <div className="proj-glow"
-        style={{ background: project.color, opacity: hovered ? 0.12 : 0 }} />
     </div>
   )
 }
 
-const wpProjects = [
-  {
-    title: 'WordPress Business Site',
-    desc: 'Responsive business website designed and developed using WordPress with custom CSS, SEO optimization, and plugin integration.',
-    tags: ['WordPress', 'CSS', 'SEO'],
-    color: '#21759b', icon: '🌐',
-  },
-  {
-    title: 'Ad-Serving Platform',
-    desc: 'Streamlined ad-serving platform with scalable backend logic, database management, and WordPress frontend integration.',
-    tags: ['WordPress', 'PHP', 'MySQL', 'CSS'],
-    color: '#f89820', icon: '📢',
-  },
-]
-
 export default function Projects() {
-  const [ref, inView] = useInView()
-  const [projects, setProjects] = useState(() => getProjects())
-
-  useEffect(() => {
-    const handler = () => setProjects(getProjects())
-    window.addEventListener('portfolio-data-updated', handler)
-    return () => window.removeEventListener('portfolio-data-updated', handler)
-  }, [])
-
-  const featured = projects.filter(p => p.featured)
-  const others = projects.filter(p => !p.featured)
-
+  const [ref,v] = useInView()
   return (
-    <section id="projects" className="projects-section">
-      <div className="section-container">
-        <div className="projects-header">
-          <div className="section-tag">03. Projects</div>
-          <h2 className="section-title">Things I've <span className="highlight">Built</span></h2>
-          <p className="projects-subtitle">A showcase of real-world applications, from concept to deployment</p>
+    <section id="projects" className="projects">
+      <div className="wrap">
+        <div className="projects__head">
+          <div className="label">Projects</div>
+          <h2 className="heading proj__title">Things I've <span className="grad-text">built</span></h2>
+          <p className="projects__sub">Real-world applications from concept to deployment</p>
         </div>
 
-        <div className="proj-label-row">
-          <span className="proj-section-label">⭐ Featured Projects</span>
-        </div>
-        <div className="projects-grid featured-grid" ref={ref}>
-          {featured.map((proj, i) => <ProjectCard key={proj.id} project={proj} index={i} inView={inView} />)}
+        <div className={`projects__grid ${v?'projects__grid--in':''}`} ref={ref}>
+          {PROJECTS.map((p,i)=><ProjectCard key={p.id} p={p} inView={v} i={i}/>)}
         </div>
 
-        <div className="proj-label-row" style={{ marginTop: '3rem' }}>
-          <span className="proj-section-label">📁 Other Projects</span>
-        </div>
-        <div className="projects-grid other-grid">
-          {others.map((proj, i) => <ProjectCard key={proj.id} project={proj} index={i} inView={inView} />)}
-        </div>
-
-        <div className="proj-label-row" style={{ marginTop: '3rem' }}>
-          <span className="proj-section-label">🌐 WordPress Projects</span>
-        </div>
-        <div className="projects-grid wp-grid">
-          {wpProjects.map((p, i) => (
-            <div key={i} className="project-card card wp-card" style={{ '--proj-color': p.color }}>
-              <div className="proj-header">
-                <div className="proj-icon" style={{ background: `${p.color}18`, border: `1px solid ${p.color}35` }}>{p.icon}</div>
-                <div className="proj-type-badge" style={{ color: p.color, background: `${p.color}12` }}>WordPress</div>
-              </div>
-              <h3 className="proj-title">{p.title}</h3>
-              <p className="proj-desc">{p.desc}</p>
-              <div className="proj-tech">
-                {p.tags.map((t, j) => <span key={j} className="tech-tag">{t}</span>)}
-              </div>
-              <p className="wp-note">📌 Developed at Creative Solution — available on request</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="proj-github-cta">
-          <a href="https://github.com/abaid-6015" target="_blank" rel="noopener noreferrer"
-            className="github-cta-btn">
-            <span>🐙</span><span>View All Repositories on GitHub</span><span>↗</span>
+        <div className="projects__cta">
+          <a href="https://github.com/abaid-6015" target="_blank" rel="noopener noreferrer" className="btn btn-ghost">
+            <FiGithub size={16}/> View all on GitHub
           </a>
         </div>
       </div>

@@ -2,59 +2,50 @@ import React, { useEffect, useRef } from 'react'
 import './CustomCursor.css'
 
 export default function CustomCursor() {
-  const dotRef = useRef(null)
-  const ringRef = useRef(null)
-  const posRef = useRef({ x: 0, y: 0 })
-  const ringPos = useRef({ x: 0, y: 0 })
+  const dot  = useRef(null)
+  const ring = useRef(null)
+  const pos  = useRef({ x: 0, y: 0 })
+  const lag  = useRef({ x: 0, y: 0 })
+  const raf  = useRef(null)
 
   useEffect(() => {
-    const onMove = (e) => {
-      posRef.current = { x: e.clientX, y: e.clientY }
-      if (dotRef.current) {
-        dotRef.current.style.left = e.clientX + 'px'
-        dotRef.current.style.top = e.clientY + 'px'
-      }
+    const move = e => { pos.current = { x: e.clientX, y: e.clientY } }
+
+    const tick = () => {
+      lag.current.x += (pos.current.x - lag.current.x) * 0.1
+      lag.current.y += (pos.current.y - lag.current.y) * 0.1
+      if (dot.current)  dot.current.style.transform  = `translate(${pos.current.x}px,${pos.current.y}px)`
+      if (ring.current) ring.current.style.transform = `translate(${lag.current.x}px,${lag.current.y}px)`
+      raf.current = requestAnimationFrame(tick)
     }
 
-    const onEnter = () => {
-      dotRef.current?.classList.add('hover')
-      ringRef.current?.classList.add('hover')
-    }
-    const onLeave = () => {
-      dotRef.current?.classList.remove('hover')
-      ringRef.current?.classList.remove('hover')
-    }
+    const enter = () => { ring.current?.classList.add('big'); dot.current?.classList.add('hide') }
+    const leave = () => { ring.current?.classList.remove('big'); dot.current?.classList.remove('hide') }
 
-    document.addEventListener('mousemove', onMove)
+    window.addEventListener('mousemove', move)
+    raf.current = requestAnimationFrame(tick)
 
-    const interactables = document.querySelectorAll('a, button, .card, input, textarea')
-    interactables.forEach(el => {
-      el.addEventListener('mouseenter', onEnter)
-      el.addEventListener('mouseleave', onLeave)
-    })
-
-    let rafId
-    const animate = () => {
-      ringPos.current.x += (posRef.current.x - ringPos.current.x) * 0.12
-      ringPos.current.y += (posRef.current.y - ringPos.current.y) * 0.12
-      if (ringRef.current) {
-        ringRef.current.style.left = ringPos.current.x + 'px'
-        ringRef.current.style.top = ringPos.current.y + 'px'
-      }
-      rafId = requestAnimationFrame(animate)
+    const attach = () => {
+      document.querySelectorAll('a,button,[data-hover]').forEach(el => {
+        el.addEventListener('mouseenter', enter)
+        el.addEventListener('mouseleave', leave)
+      })
     }
-    animate()
+    attach()
+    const obs = new MutationObserver(attach)
+    obs.observe(document.body, { childList:true, subtree:true })
 
     return () => {
-      document.removeEventListener('mousemove', onMove)
-      cancelAnimationFrame(rafId)
+      window.removeEventListener('mousemove', move)
+      cancelAnimationFrame(raf.current)
+      obs.disconnect()
     }
   }, [])
 
   return (
     <>
-      <div ref={dotRef} className="cursor-dot" />
-      <div ref={ringRef} className="cursor-ring" />
+      <div className="cur-dot"  ref={dot}  />
+      <div className="cur-ring" ref={ring} />
     </>
   )
 }

@@ -1,85 +1,212 @@
+/* ═══════════════════════════════════════════════════════════════
+   ABAID PORTFOLIO — Design System v3
+   Theme: Bento Glassmorphism · Indigo/Cyan · Void Dark
+═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
 :root {
-  --bg: #020408;
-  --bg2: #080f1a;
-  --surface: #0d1b2a;
-  --surface2: #112240;
-  --accent: #00d4ff;
-  --accent2: #7928ca;
-  --accent3: #ff0080;
-  --text: #e8f4f8;
-  --text-muted: #8892a4;
-  --border: rgba(0, 212, 255, 0.15);
-  --glow: rgba(0, 212, 255, 0.25);
-  --font-display: 'Syne', sans-serif;
-  --font-mono: 'Space Mono', monospace;
-  --font-body: 'Inter', sans-serif;
+  /* ── Palette ── */
+  --void:    #050810;
+  --depth:   #07091a;
+  --surface: #0c1128;
+  --glass:   rgba(255,255,255,0.035);
+  --glass2:  rgba(255,255,255,0.055);
+  --border:  rgba(255,255,255,0.072);
+  --border2: rgba(91,79,255,0.28);
+
+  --indigo:  #5B4FFF;
+  --indigo2: #7B6FFF;
+  --cyan:    #00E5FF;
+  --cyan2:   #5AF0FF;
+  --amber:   #FF9F0A;
+  --rose:    #FF375F;
+  --green:   #30D158;
+
+  --text:    #EDF2FF;
+  --text2:   #8B92B8;
+  --text3:   #4A5070;
+
+  /* ── Typography ── */
+  --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+
+  /* ── Radius ── */
+  --r:    20px;
+  --r-sm: 12px;
+  --r-xs: 8px;
+
+  /* ── Glow ── */
+  --glow-i: 0 0 60px rgba(91,79,255,0.25);
+  --glow-c: 0 0 60px rgba(0,229,255,0.2);
 }
 
-*, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
-html {
-  scroll-behavior: smooth;
-  font-size: 16px;
-}
+html { scroll-behavior:smooth; font-size:16px; }
 
 body {
-  background: var(--bg);
+  background: var(--void);
   color: var(--text);
-  font-family: var(--font-body);
-  line-height: 1.6;
+  font-family: var(--sans);
+  line-height: 1.65;
   overflow-x: hidden;
   cursor: none;
 }
 
-::-webkit-scrollbar {
-  width: 4px;
-}
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: var(--void); }
+::-webkit-scrollbar-thumb { background: var(--indigo); border-radius: 2px; }
 
-::-webkit-scrollbar-track {
-  background: var(--bg);
-}
+::selection { background: rgba(91,79,255,0.3); color: #fff; }
 
-::-webkit-scrollbar-thumb {
-  background: var(--accent);
-  border-radius: 2px;
-}
+a { color:inherit; text-decoration:none; }
+button { cursor:none; border:none; outline:none; background:none; font-family:var(--sans); }
+img { max-width:100%; }
 
-::selection {
-  background: rgba(0, 212, 255, 0.3);
-  color: #fff;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button {
-  cursor: none;
-}
-
-.section-container {
+/* ── Shared Layout ── */
+.wrap {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
 }
 
-.glow-text {
-  text-shadow: 0 0 20px var(--accent), 0 0 40px rgba(0,212,255,0.3);
+/* ── Bento card base ── */
+.bento {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+  transition: border-color .3s, box-shadow .3s;
 }
 
-/* Noise overlay */
-body::before {
+.bento::before {
   content: '';
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.025) 0%, transparent 60%);
   pointer-events: none;
-  z-index: 9999;
-  opacity: 0.4;
+  border-radius: inherit;
+}
+
+.bento:hover {
+  border-color: var(--border2);
+  box-shadow: var(--glow-i);
+}
+
+/* ── Typography scale ── */
+.display {
+  font-size: clamp(2.8rem, 6vw, 5.5rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+
+.heading {
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.label {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--indigo2);
+}
+
+.grad-text {
+  background: linear-gradient(135deg, var(--indigo2) 0%, var(--cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.amber-text { color: var(--amber); }
+.cyan-text  { color: var(--cyan); }
+.rose-text  { color: var(--rose); }
+
+/* ── Section rhythm ── */
+section { padding: 100px 0; }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .8rem 1.75rem;
+  border-radius: 100px;
+  font-size: .875rem;
+  font-weight: 600;
+  cursor: none;
+  transition: all .25s;
+  white-space: nowrap;
+}
+
+.btn-fill {
+  background: var(--indigo);
+  color: #fff;
+  box-shadow: 0 0 0 0 rgba(91,79,255,0);
+}
+.btn-fill:hover {
+  background: var(--indigo2);
+  box-shadow: 0 0 30px rgba(91,79,255,0.5);
+  transform: translateY(-2px);
+}
+
+.btn-ghost {
+  color: var(--text2);
+  border: 1px solid var(--border);
+  background: var(--glass);
+  backdrop-filter: blur(8px);
+}
+.btn-ghost:hover {
+  border-color: var(--border2);
+  color: var(--text);
+  transform: translateY(-2px);
+}
+
+/* ── Tag chip ── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .3rem .75rem;
+  border-radius: 100px;
+  font-size: .72rem;
+  font-weight: 500;
+  background: rgba(91,79,255,0.12);
+  border: 1px solid rgba(91,79,255,0.25);
+  color: var(--indigo2);
+}
+
+/* ── Noise overlay ── */
+body::after {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity:.025;
+  pointer-events:none;
+  z-index:9998;
+}
+
+/* ── Scrollbar accent line ── */
+body::before {
+  content:'';
+  position:fixed;
+  top:0; left:0;
+  width:2px; height:100%;
+  background: linear-gradient(to bottom, var(--indigo), var(--cyan), transparent);
+  z-index:9997;
+  opacity:.5;
+}
+
+@media (prefers-reduced-motion:reduce) {
+  *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
 }

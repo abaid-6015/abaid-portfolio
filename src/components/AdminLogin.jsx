@@ -12,7 +12,9 @@ export default function AdminLogin({ onSuccess, onClose }) {
   const [showPass, setShowPass] = useState(false)
   const userRef = useRef(null)
 
-  useEffect(() => { userRef.current?.focus() }, [])
+  useEffect(() => {
+    userRef.current?.focus()
+  }, [])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -38,28 +40,45 @@ export default function AdminLogin({ onSuccess, onClose }) {
         <form onSubmit={handleSubmit} className="admin-login-form">
           <div className="aln-field">
             <label>Username</label>
-            <input ref={userRef} type="text" value={username}
+            <input
+              ref={userRef}
+              type="text"
+              value={username}
               onChange={e => setUsername(e.target.value)}
-              placeholder="Enter username" autoComplete="off" spellCheck={false} />
+              placeholder="Enter username"
+              autoComplete="off"
+              spellCheck={false}
+            />
           </div>
           <div className="aln-field">
             <label>Password</label>
             <div className="aln-pass-wrap">
-              <input type={showPass ? 'text' : 'password'} value={password}
+              <input
+                type={showPass ? 'text' : 'password'}
+                value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="Enter password" autoComplete="current-password" />
-              <button type="button" className="aln-eye"
-                onClick={() => setShowPass(v => !v)} tabIndex={-1}>
+                placeholder="Enter password"
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                className="aln-eye"
+                onClick={() => setShowPass(v => !v)}
+                tabIndex={-1}
+              >
                 {showPass ? '🙈' : '👁️'}
               </button>
             </div>
           </div>
           {error && <div className="aln-error">⚠️ {error}</div>}
           <button type="submit" className="aln-submit">
-            <span>Authenticate</span><span>→</span>
+            <span>Authenticate</span>
+            <span>→</span>
           </button>
         </form>
-        <div className="aln-hint"><code>Ctrl+Shift+A</code> to toggle this panel</div>
+        <div className="aln-hint">
+          <code>Ctrl+Shift+A</code> to toggle this panel
+        </div>
       </div>
     </div>
   )

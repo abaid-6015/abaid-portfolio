@@ -14,7 +14,7 @@ import AdminLogin from './components/AdminLogin'
 import './App.css'
 
 export default function App() {
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading]     = useState(true)
   const [adminState, setAdminState] = useState('idle') // idle | login | panel
 
   useEffect(() => {
@@ -23,21 +23,19 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    const down = (e) => {
+    const fn = e => {
       if (e.ctrlKey && e.shiftKey && e.key === 'A') {
         e.preventDefault()
-        setAdminState(prev => prev === 'idle' ? 'login' : 'idle')
+        setAdminState(p => p === 'idle' ? 'login' : 'idle')
       }
-      if (e.key === 'Escape' && adminState !== 'idle') {
-        setAdminState('idle')
-      }
+      if (e.key === 'Escape' && adminState !== 'idle') setAdminState('idle')
     }
-    window.addEventListener('keydown', down)
-    return () => window.removeEventListener('keydown', down)
+    window.addEventListener('keydown', fn)
+    return () => window.removeEventListener('keydown', fn)
   }, [adminState])
 
-  const handleLoginSuccess = useCallback(() => setAdminState('panel'), [])
-  const handleAdminClose = useCallback(() => setAdminState('idle'), [])
+  const handleLogin = useCallback(() => setAdminState('panel'), [])
+  const handleClose = useCallback(() => setAdminState('idle'), [])
 
   if (loading) return <Loader />
 
@@ -54,12 +52,8 @@ export default function App() {
         <Contact />
       </main>
       <Footer />
-      {adminState === 'login' && (
-        <AdminLogin onSuccess={handleLoginSuccess} onClose={() => setAdminState('idle')} />
-      )}
-      {adminState === 'panel' && (
-        <Admin onClose={handleAdminClose} />
-      )}
+      {adminState === 'login' && <AdminLogin onSuccess={handleLogin} onClose={handleClose} />}
+      {adminState === 'panel' && <Admin onClose={handleClose} />}
     </div>
   )
 }
