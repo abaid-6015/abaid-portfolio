@@ -1,14 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react'
-import emailjs from '@emailjs/browser'
 import { FiMail, FiPhone, FiMapPin, FiSend, FiLinkedin, FiGithub } from 'react-icons/fi'
 import { SiUpwork, SiFiverr } from 'react-icons/si'
 import './Contact.css'
 
 function useInView(t=0.08){ const r=useRef(null); const [v,setV]=useState(false); useEffect(()=>{ const o=new IntersectionObserver(([e])=>{ if(e.isIntersecting)setV(true) },{threshold:t}); if(r.current)o.observe(r.current); return()=>o.disconnect() },[t]); return[r,v] }
 
-const SERVICE_ID  = 'service_qx4txoa'
-const TEMPLATE_ID = 'template_kzu1m6u'
-const PUBLIC_KEY  = '1YADg98Hck7ZZUjod'
+// ── Google Apps Script endpoint (replaces EmailJS) ──────────────
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwQsRByGDhInC3WzAWtxK268RtW9_pz5bJ4jFw5WEyozU77FTijYZo5gIa2GZh6QsN3/exec'
 
 const CHANNELS = [
   { Icon:FiMail,     label:'Email',    value:'abaidbse@gmail.com',      href:'mailto:abaidbse@gmail.com',     color:'#5B4FFF' },
@@ -32,12 +30,23 @@ export default function Contact() {
     e.preventDefault()
     if (!form.name || !form.email || !form.message) return
     setStatus('sending')
+
     try {
-      await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-        from_name: form.name, from_email: form.email,
-        subject: form.subject || 'Portfolio Contact',
-        message: form.message, to_email: 'abaidbse@gmail.com',
-      }, PUBLIC_KEY)
+      // Google Apps Script — no-cors is required, response cannot be read
+      // but the email is still sent successfully on Google's side
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name:    form.name,
+          email:   form.email,
+          subject: form.subject || 'Portfolio Contact',
+          message: form.message,
+        }),
+      })
+      // no-cors means we can't read the response body,
+      // but if fetch didn't throw, the request reached Google
       setStatus('success')
       setForm({ name:'', email:'', subject:'', message:'' })
       setTimeout(() => setStatus('idle'), 5000)
@@ -124,7 +133,9 @@ export default function Contact() {
               </button>
 
               {status==='success' && (
-                <div className="cf-feedback cf-feedback--ok">Your message was sent! I'll reply to abaidbse@gmail.com shortly.</div>
+                <div className="cf-feedback cf-feedback--ok">
+                  Your message was sent! I'll reply to abaidbse@gmail.com shortly.
+                </div>
               )}
               {status==='error' && (
                 <div className="cf-feedback cf-feedback--err">
