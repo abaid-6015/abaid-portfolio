@@ -1,8 +1,9 @@
 import React,{useState,useEffect,useRef} from 'react'
-export default function AdminLogin({onSuccess,onClose,adminUser,adminPass}){
-  const [u,setU]=useState('');const [p,setP]=useState('');const [err,setErr]=useState('');const [shake,setShake]=useState(false);const [show,setShow]=useState(false);const ref=useRef(null)
+import {authRequest,SITE_SLUG} from '../store/dataStore'
+export default function AdminLogin({onSuccess,onClose}){
+  const [u,setU]=useState('');const [p,setP]=useState('');const [err,setErr]=useState('');const [shake,setShake]=useState(false);const [show,setShow]=useState(false);const [busy,setBusy]=useState(false);const ref=useRef(null)
   useEffect(()=>{ref.current?.focus()},[])
-  const submit=e=>{e.preventDefault();if(u===adminUser&&p===adminPass){onSuccess()}else{setErr('Invalid credentials.');setShake(true);setTimeout(()=>setShake(false),500);setP('')}}
+  const submit=async e=>{e.preventDefault();setErr('');setBusy(true);try{await authRequest('login',{username:u.trim(),password:p});setP('');onSuccess()}catch(error){setErr(error.message);setShake(true);setTimeout(()=>setShake(false),500);setP('')}finally{setBusy(false)}}
   return(
     <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.88)',backdropFilter:'blur(14px)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:10000}}>
       <div style={{background:'#0c1128',border:'1px solid rgba(91,79,255,.28)',borderRadius:'16px',padding:'2.5rem',width:'100%',maxWidth:'400px',position:'relative',boxShadow:'0 0 60px rgba(91,79,255,.15)',animation:shake?'shake .4s ease':'slideUp .3s cubic-bezier(.34,1.56,.64,1)'}}>
@@ -22,9 +23,9 @@ export default function AdminLogin({onSuccess,onClose,adminUser,adminPass}){
             </div>
           ))}
           {err&&<div style={{background:'rgba(255,77,77,.1)',border:'1px solid rgba(255,77,77,.3)',borderRadius:'8px',padding:'.65rem 1rem',color:'#ff6b6b',fontSize:'.82rem',textAlign:'center'}}>⚠️ {err}</div>}
-          <button type="submit" style={{background:'linear-gradient(135deg,var(--accent,#5B4FFF),#7B6FFF)',color:'#fff',border:'none',borderRadius:'8px',padding:'.875rem',fontFamily:'var(--sans)',fontSize:'.85rem',fontWeight:600,cursor:'pointer',marginTop:'.25rem'}}>Authenticate →</button>
+          <button type="submit" disabled={busy} style={{background:'linear-gradient(135deg,var(--accent,#5B4FFF),#7B6FFF)',color:'#fff',border:'none',borderRadius:'8px',padding:'.875rem',fontFamily:'var(--sans)',fontSize:'.85rem',fontWeight:600,cursor:'pointer',marginTop:'.25rem'}}>{busy?'Authenticating...':'Authenticate →'}</button>
         </form>
-        <div style={{textAlign:'center',marginTop:'1.25rem',fontSize:'.7rem',color:'#4a5568',fontFamily:'var(--mono)'}}>Ctrl+Shift+{adminUser==='abaidulrehman'?'A':'M'} to toggle</div>
+        <div style={{textAlign:'center',marginTop:'1.25rem',fontSize:'.7rem',color:'#4a5568',fontFamily:'var(--mono)'}}>Ctrl+Shift+{SITE_SLUG==='abaid'?'A':'M'} to toggle</div>
       </div>
     </div>
   )

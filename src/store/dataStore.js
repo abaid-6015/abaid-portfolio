@@ -2,8 +2,6 @@ const uid=()=>Math.random().toString(36).slice(2,9)
 const EV='portfolio:updated'
 export const emit=()=>window.dispatchEvent(new CustomEvent(EV))
 export const onUpdate=(fn)=>{window.addEventListener(EV,fn);return()=>window.removeEventListener(EV,fn)}
-const load=(k,fb)=>{try{const r=localStorage.getItem(k);return r?JSON.parse(r):fb}catch{return fb}}
-const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 
 export const DEFAULTS={
   hero:{name:'Abaid-ul-Rehman',tagline:'Full-Stack Web Developer',roles:['Full-Stack Web Developer','MERN Stack Engineer','React Native Developer','Game Developer — Unity','UI/UX Designer — Figma','WordPress Developer'],bio:'Building immersive, scalable digital products — from MERN web apps and React Native mobile apps to 3D games and WordPress solutions. Based in Pakistan, working globally.',available:true,location:'Gujranwala, Pakistan',stats:[{label:'Projects Built',value:'8+'},{label:'Years Coding',value:'3+'},{label:'Technologies',value:'12+'},{label:'Platforms',value:'4'}]},
@@ -25,41 +23,84 @@ export const DEFAULTS={
   education:[{id:'ed1',degree:'B.Sc. Software Engineering',school:'Gift University, Gujranwala',period:'2024 — Present',detail:'',color:'#5B4FFF'},{id:'ed2',degree:'Matriculation (Secondary)',school:'City Cardinal High School',period:'2008 — 2021',detail:'',color:'#00E5FF'}]
 }
 
-const K={hero:'pf_hero',socials:'pf_socials',about:'pf_about',contact:'pf_contact',skills:'pf_skills',projects:'pf_projects',experiences:'pf_experiences',education:'pf_education'}
-
-export const getHero=()=>load(K.hero,DEFAULTS.hero)
-export const saveHero=(d)=>{save(K.hero,d);emit()}
-export const getSocials=()=>load(K.socials,DEFAULTS.socials)
-export const saveSocials=(d)=>{save(K.socials,d);emit()}
-export const getAbout=()=>load(K.about,DEFAULTS.about)
-export const saveAbout=(d)=>{save(K.about,d);emit()}
-export const getContact=()=>load(K.contact,DEFAULTS.contact)
-export const saveContact=(d)=>{save(K.contact,d);emit()}
-export const getSkills=()=>load(K.skills,DEFAULTS.skills)
-export const saveSkills=(d)=>{save(K.skills,d);emit()}
-export const addSkill=(d)=>{const a=[...getSkills(),{...d,id:uid()}];saveSkills(a);return a}
+// Public content is cached in memory; MongoDB is the sole source of truth.
+// No password, JWT, or MongoDB connection string is exposed to the browser.
+export const SITE_SLUG='abaid'
+const sections=['hero','socials','about','contact','skills','projects','experiences','education']
+let content=structuredClone(DEFAULTS)
+let pictures={}
+let pending={}
+let inflight={}
+let versions={}
+let remoteState='idle'
+export function getSyncStatus(){return remoteState}
+function setStatus(status,message=''){remoteState=status;window.dispatchEvent(new CustomEvent('portfolio:sync',{detail:{status,message}}))}
+async function request(url,options={}){
+  const response=await fetch(url,{credentials:'same-origin',cache:'no-store',...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...options.headers}})
+  let parsed;try{parsed=await response.json()}catch{parsed={}}
+  if(!response.ok)throw new Error(parsed.error||`Request failed (${response.status})`)
+  return parsed
+}
+export async function bootstrap(){
+  const result=await request(`/api/content?site=${SITE_SLUG}`)
+  sections.forEach(section=>{if(result.data[section]!==undefined)content[section]=result.data[section]})
+  pictures=result.data.images||{}
+  emit()
+}
+const read=section=>content[section]
+const persist=(section,value)=>{
+  content[section]=value;emit();versions[section]=(versions[section]||0)+1
+  const revision=versions[section]
+  clearTimeout(pending[section]);setStatus('saving')
+  pending[section]=setTimeout(()=>{
+    const task=()=>request('/api/content',{method:'PUT',body:JSON.stringify({site:SITE_SLUG,section,data:content[section]})})
+    inflight[section]=(inflight[section]||Promise.resolve()).catch(()=>{}).then(task).then(()=>{
+      if(versions[section]===revision)setStatus('saved')
+    }).catch(error=>{setStatus('error',error.message);console.error('Portfolio save failed:',error)})
+  },550)
+}
+export function onSync(fn){window.addEventListener('portfolio:sync',fn);return()=>window.removeEventListener('portfolio:sync',fn)}
+export const getHero=()=>read('hero')
+export const saveHero=d=>persist('hero',d)
+export const getSocials=()=>read('socials')
+export const saveSocials=d=>persist('socials',d)
+export const getAbout=()=>read('about')
+export const saveAbout=d=>persist('about',d)
+export const getContact=()=>read('contact')
+export const saveContact=d=>persist('contact',d)
+export const getSkills=()=>read('skills')
+export const saveSkills=d=>persist('skills',d)
+export const addSkill=d=>{const a=[...getSkills(),{...d,id:uid()}];saveSkills(a);return a}
 export const updateSkill=(id,d)=>{const a=getSkills().map(x=>x.id===id?{...x,...d}:x);saveSkills(a);return a}
-export const deleteSkill=(id)=>{const a=getSkills().filter(x=>x.id!==id);saveSkills(a);return a}
-export const getProjects=()=>load(K.projects,DEFAULTS.projects)
-export const saveProjects=(d)=>{save(K.projects,d);emit()}
-export const addProject=(d)=>{const a=[...getProjects(),{...d,id:uid()}];saveProjects(a);return a}
+export const deleteSkill=id=>{const a=getSkills().filter(x=>x.id!==id);saveSkills(a);return a}
+export const getProjects=()=>read('projects')
+export const saveProjects=d=>persist('projects',d)
+export const addProject=d=>{const a=[...getProjects(),{...d,id:uid()}];saveProjects(a);return a}
 export const updateProject=(id,d)=>{const a=getProjects().map(x=>x.id===id?{...x,...d}:x);saveProjects(a);return a}
-export const deleteProject=(id)=>{const a=getProjects().filter(x=>x.id!==id);saveProjects(a);return a}
-export const getExperiences=()=>load(K.experiences,DEFAULTS.experiences)
-export const saveExperiences=(d)=>{save(K.experiences,d);emit()}
-export const addExperience=(d)=>{const a=[...getExperiences(),{...d,id:uid()}];saveExperiences(a);return a}
+export const deleteProject=id=>{const a=getProjects().filter(x=>x.id!==id);saveProjects(a);return a}
+export const getExperiences=()=>read('experiences')
+export const saveExperiences=d=>persist('experiences',d)
+export const addExperience=d=>{const a=[...getExperiences(),{...d,id:uid()}];saveExperiences(a);return a}
 export const updateExperience=(id,d)=>{const a=getExperiences().map(x=>x.id===id?{...x,...d}:x);saveExperiences(a);return a}
-export const deleteExperience=(id)=>{const a=getExperiences().filter(x=>x.id!==id);saveExperiences(a);return a}
-export const getEducation=()=>load(K.education,DEFAULTS.education)
-export const saveEducation=(d)=>{save(K.education,d);emit()}
-export const addEducation=(d)=>{const a=[...getEducation(),{...d,id:uid()}];saveEducation(a);return a}
+export const deleteExperience=id=>{const a=getExperiences().filter(x=>x.id!==id);saveExperiences(a);return a}
+export const getEducation=()=>read('education')
+export const saveEducation=d=>persist('education',d)
+export const addEducation=d=>{const a=[...getEducation(),{...d,id:uid()}];saveEducation(a);return a}
 export const updateEducation=(id,d)=>{const a=getEducation().map(x=>x.id===id?{...x,...d}:x);saveEducation(a);return a}
-export const deleteEducation=(id)=>{const a=getEducation().filter(x=>x.id!==id);saveEducation(a);return a}
-export const resetAll=()=>{Object.values(K).forEach(k=>localStorage.removeItem(k));emit()}
-export const exportData=()=>{const d={};Object.entries(K).forEach(([k,v])=>{d[k]=load(v,DEFAULTS[k])});return JSON.stringify(d,null,2)}
-export const importData=(json)=>{try{const d=JSON.parse(json);Object.entries(K).forEach(([k,v])=>{if(d[k])save(v,d[k])});emit();return true}catch{return false}}
-
-// Image helpers
-export const getProjectImages=(pid)=>{try{const idx=JSON.parse(localStorage.getItem(`proj_imgs_${pid}`)||'[]');return idx.map(i=>({index:i,src:localStorage.getItem(`proj_img_${pid}_${i}`)})).filter(x=>x.src)}catch{return[]}}
-export const saveProjectImage=(pid,idx,b64)=>{try{localStorage.setItem(`proj_img_${pid}_${idx}`,b64);const lk=`proj_imgs_${pid}`;const ex=JSON.parse(localStorage.getItem(lk)||'[]');if(!ex.includes(idx)){ex.push(idx);localStorage.setItem(lk,JSON.stringify(ex))}}catch{}}
-export const deleteProjectImage=(pid,idx)=>{try{localStorage.removeItem(`proj_img_${pid}_${idx}`);const lk=`proj_imgs_${pid}`;const ex=JSON.parse(localStorage.getItem(lk)||'[]');localStorage.setItem(lk,JSON.stringify(ex.filter(i=>i!==idx)))}catch{}}
+export const deleteEducation=id=>{const a=getEducation().filter(x=>x.id!==id);saveEducation(a);return a}
+export async function resetAll(){await request('/api/content',{method:'POST',body:JSON.stringify({site:SITE_SLUG,action:'reset'})});await bootstrap()}
+export function exportData(){const data={};sections.forEach(k=>data[k]=content[k]);return JSON.stringify(data,null,2)}
+export async function importData(text){const data=JSON.parse(text);await request('/api/content',{method:'POST',body:JSON.stringify({site:SITE_SLUG,action:'import',data})});await bootstrap();return true}
+export const getProjectImages=id=>(pictures[id]||[]).map(i=>({index:i.id,src:i.src}))
+export async function saveProjectImage(projectId,idx,b64){
+  const response=await request('/api/photo',{method:'POST',body:JSON.stringify({site:SITE_SLUG,projectId,dataUrl:b64})})
+  pictures={...pictures,[projectId]:[...(pictures[projectId]||[]),response.photo]}
+  emit();return response.photo
+}
+export async function deleteProjectImage(projectId,id){
+  await request('/api/photo',{method:'DELETE',body:JSON.stringify({site:SITE_SLUG,projectId,id})})
+  pictures={...pictures,[projectId]:(pictures[projectId]||[]).filter(photo=>photo.id!==id)}
+  emit()
+}
+export async function authRequest(action,extra={}){return request('/api/auth',{method:'POST',body:JSON.stringify({site:SITE_SLUG,action,...extra})})}
+export async function isAuthenticated(){try{await request(`/api/auth?site=${SITE_SLUG}`);return true}catch{return false}}

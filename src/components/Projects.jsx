@@ -3,12 +3,10 @@ import {FiGithub,FiExternalLink,FiImage,FiX,FiChevronLeft,FiChevronRight,FiMaxim
 import {SiReact,SiMongodb,SiNodedotjs,SiMysql,SiFirebase,SiUnity,SiWordpress,SiFigma,SiPhp,SiPython,SiJavascript,SiCss3,SiHtml5} from 'react-icons/si'
 import {DiJava} from 'react-icons/di'
 import {HiOutlineGlobeAlt,HiOutlineCube,HiOutlineDesktopComputer,HiOutlineServer,HiOutlineAcademicCap,HiOutlinePencil,HiOutlineCollection} from 'react-icons/hi'
-import {getProjects,onUpdate,getProjectImages,saveProjectImage,deleteProjectImage} from '../store/dataStore'
+import {getProjects,onUpdate,getProjectImages} from '../store/dataStore'
 
 const TECH_ICONS={'React.js':SiReact,'React Native':SiReact,MongoDB:SiMongodb,'Node.js':SiNodedotjs,MySQL:SiMysql,Firebase:SiFirebase,Unity:SiUnity,WordPress:SiWordpress,Figma:SiFigma,PHP:SiPhp,Python:SiPython,Java:DiJava,JavaScript:SiJavascript,'CSS3':SiCss3,'HTML5':SiHtml5}
 const TYPE_ICONS={'Web + Mobile':HiOutlineGlobeAlt,'Desktop App':HiOutlineDesktopComputer,'WebGL · 3D':HiOutlineCube,'Game Dev':HiOutlineCube,'Web App':HiOutlineServer,'Networking':HiOutlineAcademicCap,'Design':HiOutlinePencil,'WordPress':HiOutlineGlobeAlt}
-
-const toBase64=(file)=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})
 
 function useInView(){const r=useRef(null);const[v,setV]=useState(false);useEffect(()=>{const o=new IntersectionObserver(([e])=>{if(e.isIntersecting)setV(true)},{threshold:.04});if(r.current)o.observe(r.current);return()=>o.disconnect()},[]);return[r,v]}
 
@@ -29,63 +27,8 @@ function Lightbox({images,startIndex,onClose}){
   )
 }
 
-function ImageUploader({projectId,onClose}){
-  const[images,setImages]=useState(()=>getProjectImages(projectId))
-  const[dragging,setDrag]=useState(false)
-  const[loading,setLoad]=useState(false)
-  const inputRef=useRef(null)
-  const handleFiles=async(files)=>{
-    setLoad(true)
-    for(const file of Array.from(files)){
-      if(!file.type.startsWith('image/'))continue
-      try{
-        const b64=await toBase64(file)
-        const img=new Image();img.src=b64;await new Promise(r=>img.onload=r)
-        const MAX=1200,scale=Math.min(1,MAX/img.width)
-        const canvas=document.createElement('canvas');canvas.width=img.width*scale;canvas.height=img.height*scale
-        canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height)
-        const compressed=canvas.toDataURL('image/jpeg',.75)
-        const nextIdx=Date.now()
-        saveProjectImage(projectId,nextIdx,compressed)
-        setImages(getProjectImages(projectId))
-        await new Promise(r=>setTimeout(r,50))
-      }catch(e){console.error(e)}
-    }
-    setLoad(false)
-    window.dispatchEvent(new CustomEvent('portfolio:updated'))
-  }
-  const del=(idx)=>{deleteProjectImage(projectId,idx);setImages(getProjectImages(projectId));window.dispatchEvent(new CustomEvent('portfolio:updated'))}
-  return(
-    <div style={{borderTop:'1px solid rgba(255,255,255,.07)',paddingTop:'1rem',marginTop:'.25rem',display:'flex',flexDirection:'column',gap:'.75rem',zIndex:2,position:'relative'}} onClick={e=>e.stopPropagation()}>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',fontSize:'.82rem',fontWeight:600,color:'var(--text)'}}>
-        <span>📸 Project Screenshots ({images.length})</span>
-        <button onClick={onClose} style={{background:'none',border:'none',color:'var(--text3)',cursor:'pointer',display:'flex',alignItems:'center'}}><FiX size={16}/></button>
-      </div>
-      <div onClick={()=>!loading&&inputRef.current?.click()} onDragOver={e=>{e.preventDefault();setDrag(true)}} onDragLeave={()=>setDrag(false)} onDrop={e=>{e.preventDefault();setDrag(false);handleFiles(e.dataTransfer.files)}}
-        style={{border:`1.5px dashed ${dragging?'rgba(91,79,255,.5)':'rgba(255,255,255,.1)'}`,borderRadius:'10px',padding:'1.25rem',textAlign:'center',cursor:'pointer',background:dragging?'rgba(91,79,255,.06)':'rgba(255,255,255,.02)',display:'flex',flexDirection:'column',alignItems:'center',gap:'.4rem',color:'var(--text3)',fontSize:'.82rem',transition:'all .2s'}}>
-        <input ref={inputRef} type="file" accept="image/*" multiple style={{display:'none'}} onChange={e=>handleFiles(e.target.files)}/>
-        <FiImage size={24} style={{opacity:.6}}/>
-        {loading?<span>Processing...</span>:<span>Drop images here or click to browse</span>}
-        <small style={{fontSize:'.68rem',opacity:.6}}>PNG, JPG, WebP · Multiple allowed</small>
-      </div>
-      {images.length>0&&(
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(72px,1fr))',gap:'.5rem'}}>
-          {images.map((img,i)=>(
-            <div key={img.index} style={{position:'relative',aspectRatio:1,borderRadius:'7px',overflow:'hidden',border:'1px solid rgba(255,255,255,.08)'}}>
-              <img src={img.src} alt="" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/>
-              <button onClick={()=>del(img.index)} style={{position:'absolute',top:'3px',right:'3px',background:'rgba(0,0,0,.75)',border:'none',color:'#fff',width:'18px',height:'18px',borderRadius:'50%',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'.75rem'}}>×</button>
-            </div>
-          ))}
-        </div>
-      )}
-      <p style={{fontSize:'.68rem',color:'var(--text3)',fontStyle:'italic'}}>Images saved in browser. Use Admin → Settings → Export to back up.</p>
-    </div>
-  )
-}
-
 function ProjectCard({project,index,inView}){
   const[hov,setHov]=useState(false)
-  const[showUploader,setShowUploader]=useState(false)
   const[lightbox,setLightbox]=useState(null)
   const[images,setImages]=useState(()=>getProjectImages(project.id))
   useEffect(()=>onUpdate(()=>setImages(getProjectImages(project.id))),[project.id])
@@ -122,11 +65,10 @@ function ProjectCard({project,index,inView}){
       <div style={{display:'flex',gap:'.5rem',flexWrap:'wrap',position:'relative',zIndex:1,marginTop:'auto',paddingTop:'.25rem'}}>
         {project.github&&<a href={project.github} target="_blank" rel="noopener noreferrer" style={{display:'inline-flex',alignItems:'center',gap:'.35rem',padding:'.35rem .8rem',borderRadius:'7px',fontSize:'.73rem',fontWeight:500,color:'var(--text2)',border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.04)',textDecoration:'none',transition:'all .2s'}}><FiGithub size={13}/>Code</a>}
         {project.live&&<a href={project.live} target="_blank" rel="noopener noreferrer" style={{display:'inline-flex',alignItems:'center',gap:'.35rem',padding:'.35rem .8rem',borderRadius:'7px',fontSize:'.73rem',fontWeight:600,color:project.color,border:`1px solid ${project.color}45`,background:`${project.color}0e`,textDecoration:'none',transition:'all .2s'}}><FiExternalLink size={13}/>Live Demo</a>}
-        <button onClick={()=>setShowUploader(v=>!v)} style={{display:'inline-flex',alignItems:'center',gap:'.35rem',padding:'.35rem .8rem',borderRadius:'7px',fontSize:'.73rem',fontWeight:images.length>0?600:500,color:images.length>0?'var(--accent2)':'var(--text2)',border:`1px solid ${images.length>0?'rgba(91,79,255,.35)':'rgba(255,255,255,.1)'}`,background:images.length>0?'rgba(91,79,255,.08)':'rgba(255,255,255,.04)',cursor:'none',transition:'all .2s'}}>
-          <FiImage size={13}/>{images.length>0?`${images.length} Photo${images.length>1?'s':''}`:'Add Photos'}
+        <button onClick={()=>images.length&&setLightbox(0)} style={{display:'inline-flex',alignItems:'center',gap:'.35rem',padding:'.35rem .8rem',borderRadius:'7px',fontSize:'.73rem',fontWeight:images.length>0?600:500,color:images.length>0?'var(--accent2)':'var(--text2)',border:`1px solid ${images.length>0?'rgba(91,79,255,.35)':'rgba(255,255,255,.1)'}`,background:images.length>0?'rgba(91,79,255,.08)':'rgba(255,255,255,.04)',cursor:'none',transition:'all .2s'}}>
+          <FiImage size={13}/>{images.length>0?`${images.length} Photo${images.length>1?'s':''}`:'No photos yet'}
         </button>
       </div>
-      {showUploader&&<ImageUploader projectId={project.id} onClose={()=>setShowUploader(false)}/>}
       {lightbox!==null&&<Lightbox images={images} startIndex={lightbox} onClose={()=>setLightbox(null)}/>}
     </div>
   )

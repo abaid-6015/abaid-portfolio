@@ -1,12 +1,12 @@
 import React,{useState,useEffect,useRef} from 'react'
-import {getHero,saveHero,getSocials,saveSocials,getAbout,saveAbout,getContact,saveContact,getSkills,addSkill,updateSkill,deleteSkill,getProjects,addProject,updateProject,deleteProject,getExperiences,addExperience,updateExperience,deleteExperience,getEducation,addEducation,updateEducation,deleteEducation,resetAll,exportData,importData,DEFAULTS,getProjectImages,saveProjectImage,deleteProjectImage} from '../store/dataStore'
+import {getHero,saveHero,getSocials,saveSocials,getAbout,saveAbout,getContact,saveContact,getSkills,addSkill,updateSkill,deleteSkill,getProjects,addProject,updateProject,deleteProject,getExperiences,addExperience,updateExperience,deleteExperience,getEducation,addEducation,updateEducation,deleteEducation,resetAll,exportData,importData,DEFAULTS,getProjectImages,saveProjectImage,deleteProjectImage,onSync,authRequest} from '../store/dataStore'
 
 const uid=()=>Math.random().toString(36).slice(2,9)
 const toB64=(f)=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)})
 const COLORS=['#5B4FFF','#00E5FF','#FF375F','#FF9F0A','#30D158','#A78BFA','#C2727A','#D4A85A','#7FB5A0','#8b5cf6']
 
 // Shared sub-components
-function Saved({show}){return show?<span style={{fontSize:'.75rem',color:'#30D158',fontFamily:'monospace',animation:'fadein .3s ease'}}>✓ Saved</span>:null}
+function Saved({show}){return show?<span style={{fontSize:'.75rem',color:'#30D158',fontFamily:'monospace',animation:'fadein .3s ease'}}>✎ Edited</span>:null}
 function ColorPicker({value,onChange}){
   return(
     <div style={{display:'flex',alignItems:'center',gap:'.4rem',flexWrap:'wrap'}}>
@@ -255,7 +255,7 @@ function ProjectsPanel(){
   const save=()=>{if(!form.title.trim())return;const next=modal.mode==='add'?addProject(form):updateProject(modal.id,form);setProjects(next);setModal(null)}
   const del=id=>{if(!confirm('Delete project?'))return;setProjects(deleteProject(id))}
   const toggle=id=>setProjects(updateProject(id,{featured:!projects.find(p=>p.id===id).featured}))
-  const getImgCount=id=>{try{return JSON.parse(localStorage.getItem(`proj_imgs_${id}`)||'[]').length}catch{return 0}}
+  const getImgCount=id=>getProjectImages(id).length
   const handleFiles=async(files,projectId)=>{
     setLoad(true)
     for(const file of Array.from(files)){
@@ -265,9 +265,9 @@ function ProjectsPanel(){
         const MAX=1200,scale=Math.min(1,MAX/img.width)
         const canvas=document.createElement('canvas');canvas.width=img.width*scale;canvas.height=img.height*scale
         canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height)
-        saveProjectImage(projectId,Date.now(),canvas.toDataURL('image/jpeg',.75))
+        await saveProjectImage(projectId,Date.now(),canvas.toDataURL('image/jpeg',.76))
         await new Promise(r=>setTimeout(r,50))
-      }catch(e){console.error(e)}
+      }catch(e){console.error(e);alert('Photo upload failed: '+e.message)}
     }
     setLoad(false);window.dispatchEvent(new CustomEvent('portfolio:updated'))
   }
@@ -313,7 +313,7 @@ function ProjectsPanel(){
                       {getProjectImages(p.id).map((img,idx)=>(
                         <div key={img.index} style={{position:'relative',aspectRatio:'16/10',borderRadius:'7px',overflow:'hidden',border:'1px solid rgba(255,255,255,.08)'}}>
                           <img src={img.src} alt="" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/>
-                          <button onClick={()=>{deleteProjectImage(p.id,img.index);window.dispatchEvent(new CustomEvent('portfolio:updated'));setImgFor(null);setTimeout(()=>setImgFor(p.id),10)}} style={{position:'absolute',top:'2px',right:'2px',background:'rgba(0,0,0,.75)',border:'none',color:'#fff',width:'16px',height:'16px',borderRadius:'50%',cursor:'none',fontSize:'.75rem',display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
+                          <button onClick={async()=>{try{await deleteProjectImage(p.id,img.index);setImgFor(null);setTimeout(()=>setImgFor(p.id),10)}catch(e){alert('Delete failed: '+e.message)}}} style={{position:'absolute',top:'2px',right:'2px',background:'rgba(0,0,0,.75)',border:'none',color:'#fff',width:'16px',height:'16px',borderRadius:'50%',cursor:'none',fontSize:'.75rem',display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
                         </div>
                       ))}
                     </div>
@@ -468,10 +468,14 @@ function EducationPanel(){
 
 // ── SETTINGS PANEL ───────────────────────────────────────
 function SettingsPanel(){
-  const[inp,setInp]=useState('');const[msg,setMsg]=useState('');const fileRef=useRef(null)
+  const[inp,setInp]=useState('');const[msg,setMsg]=useState('');const fileRef=useRef(null);const[oldPassword,setOldPassword]=useState('');const[newPassword,setNewPassword]=useState('');const[confirmPassword,setConfirmPassword]=useState('')
   const doExport=()=>{const blob=new Blob([exportData()],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='portfolio-backup.json';a.click();URL.revokeObjectURL(url)}
-  const doImport=()=>{if(!inp.trim()){setMsg('❌ Paste JSON first');return};const ok=importData(inp);setMsg(ok?'✅ Imported! Reloading...':'❌ Invalid JSON');if(ok)setTimeout(()=>window.location.reload(),1500)}
-  const doReset=()=>{if(!confirm('⚠️ Reset ALL data to defaults? This cannot be undone.'))return;resetAll();setTimeout(()=>window.location.reload(),500)}
+  const doImport=async()=>{if(!inp.trim()){setMsg('❌ Paste JSON first');return};try{await importData(inp);setMsg('✅ Restored from MongoDB');setTimeout(()=>window.location.reload(),800)}catch(e){setMsg('❌ '+e.message)}}
+  const doReset=async()=>{if(!confirm('⚠️ Reset ALL data to defaults? This cannot be undone.'))return;try{await resetAll();window.location.reload()}catch(e){setMsg('❌ '+e.message)}}
+  const changePass=async()=>{
+    if(newPassword!==confirmPassword){setMsg('❌ New passwords do not match');return}
+    try{const result=await authRequest('change-password',{currentPassword:oldPassword,nextPassword:newPassword});setMsg('✅ '+result.message);setOldPassword('');setNewPassword('');setConfirmPassword('');setTimeout(()=>window.location.reload(),1500)}catch(e){setMsg('❌ '+e.message)}
+  }
   const onFile=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>setInp(ev.target.result);r.readAsText(f)}
   const settCard={...card_s,display:'flex',flexDirection:'column',gap:'.85rem'}
   const settBtn=(color)=>({padding:'.7rem 1.2rem',borderRadius:'8px',fontSize:'.83rem',fontWeight:600,cursor:'none',border:'none',background:color==='danger'?'rgba(255,55,95,.12)':color==='sec'?'rgba(255,255,255,.05)':'rgba(91,79,255,.15)',outline:`1px solid ${color==='danger'?'rgba(255,55,95,.3)':color==='sec'?'rgba(255,255,255,.1)':'rgba(91,79,255,.3)'}`,color:color==='danger'?'#FF375F':color==='sec'?'#8892a4':'#7B6FFF'})
@@ -494,6 +498,16 @@ function SettingsPanel(){
           <textarea rows="5" value={inp} onChange={e=>setInp(e.target.value)} placeholder='Or paste JSON here...' style={{...ta_s,fontSize:'.75rem',color:'#6a7f99'}}/>
           <button type="button" style={settBtn()} onClick={doImport}>Import & Restore</button>
           {msg&&<div style={{padding:'.65rem 1rem',borderRadius:'8px',background:'rgba(255,255,255,.04)',fontSize:'.82rem',color:'#8892a4'}}>{msg}</div>}
+        </div>
+        <div style={settCard}>
+          <div style={{fontSize:'1.8rem'}}>🔑</div>
+          <div style={{fontSize:'1rem',fontWeight:700,color:'#EDF2FF'}}>Change Admin Password</div>
+          <div style={{fontSize:'.82rem',color:'#6a7f99'}}>Update your password securely. All sessions will be signed out.</div>
+          <input type="password" autoComplete="current-password" style={inp_s} value={oldPassword} onChange={e=>setOldPassword(e.target.value)} placeholder="Current password"/>
+          <input type="password" autoComplete="new-password" style={inp_s} value={newPassword} onChange={e=>setNewPassword(e.target.value)} placeholder="New password (12+ characters)"/>
+          <input type="password" autoComplete="new-password" style={inp_s} value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} placeholder="Confirm new password"/>
+          <button type="button" style={settBtn()} onClick={changePass}>Update Password</button>
+          {msg&&<div role="status" style={{fontSize:'.8rem',color:'#8892a4'}}>{msg}</div>}
         </div>
         <div style={{...settCard,border:'1px solid rgba(255,55,95,.18)'}}>
           <div style={{fontSize:'1.8rem'}}>⚠️</div>
@@ -518,8 +532,10 @@ const TABS=[
   {id:'education',icon:'🎓',label:'Education',desc:'Degrees & schools'},
   {id:'settings',icon:'⚙️',label:'Settings',desc:'Backup, import, reset'},
 ]
-export default function Admin({onClose}){
+export default function Admin({onClose,onLogout}){
   const[tab,setTab]=useState('hero')
+  const[sync,setSync]=useState({status:'saved',message:''})
+  useEffect(()=>onSync(e=>setSync(e.detail)),[])
   const cur=TABS.find(t=>t.id===tab)
   const sb={background:'#07091a',borderRight:'1px solid rgba(91,79,255,.2)',display:'flex',flexDirection:'column',overflow:'hidden',width:'240px',flexShrink:0}
   return(
@@ -546,8 +562,9 @@ export default function Admin({onClose}){
             </nav>
           </div>
           <div style={{padding:'1rem',borderTop:'1px solid rgba(255,255,255,.06)',display:'flex',flexDirection:'column',gap:'.6rem'}}>
-            <div style={{display:'flex',alignItems:'center',gap:'.5rem',fontSize:'.72rem',color:'#30D158'}}><span style={{width:'6px',height:'6px',borderRadius:'50%',background:'#30D158',boxShadow:'0 0 6px #30D158'}}/>Changes update live</div>
+            <div style={{display:'flex',alignItems:'center',gap:'.5rem',fontSize:'.72rem',color:'#30D158'}}><span style={{width:'6px',height:'6px',borderRadius:'50%',background:'#30D158',boxShadow:'0 0 6px #30D158'}}/>{sync.status==='saving'?'Saving to MongoDB…':sync.status==='error'?'⚠ Save failed': '✓ Synced with MongoDB'}</div>
             <button onClick={onClose} style={{padding:'.65rem 1rem',borderRadius:'8px',fontSize:'.82rem',fontWeight:600,color:'#8892a4',border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)',cursor:'none',transition:'all .2s'}}>← Back to Portfolio</button>
+            <button onClick={onLogout} style={{padding:'.65rem 1rem',borderRadius:'8px',fontSize:'.82rem',color:'#ff9a9a',border:'1px solid rgba(255,55,95,.2)'}}>Sign Out</button>
           </div>
         </div>
         {/* Main content */}
@@ -559,6 +576,7 @@ export default function Admin({onClose}){
             </div>
             <button onClick={onClose} style={{width:'32px',height:'32px',borderRadius:'8px',background:'none',border:'1px solid rgba(255,255,255,.08)',color:'#4a5568',cursor:'none',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1rem',transition:'all .2s'}}>✕</button>
           </div>
+          {sync.status==='error'&&<div role="alert" style={{padding:'1rem',background:'#512020',color:'#ffb0b0'}}>Save failed: {sync.message}. Reload only after fixing the connection.</div>}
           <div style={{flex:1,overflowY:'auto',padding:'2rem'}}>
             {tab==='hero'&&<HeroPanel/>}
             {tab==='socials'&&<SocialsPanel/>}
