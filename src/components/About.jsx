@@ -1,108 +1,59 @@
-import React, { useRef, useEffect, useState } from 'react'
-import { FiLinkedin, FiGithub, FiMail } from 'react-icons/fi'
-import { SiUpwork, SiFiverr } from 'react-icons/si'
-import { HiOutlineCode, HiOutlineDeviceMobile, HiOutlineDesktopComputer, HiOutlinePuzzle } from 'react-icons/hi'
-import './About.css'
-
-function useInView(t=0.1){ const r=useRef(null); const [v,setV]=useState(false); useEffect(()=>{ const o=new IntersectionObserver(([e])=>{ if(e.isIntersecting)setV(true) },{threshold:t}); if(r.current)o.observe(r.current); return()=>o.disconnect() },[t]); return[r,v] }
-
-const ROLES = [
-  { Icon:HiOutlineCode,            label:'Web Dev',     desc:'MERN stack, REST APIs, full-stack apps' },
-  { Icon:HiOutlineDeviceMobile,    label:'Mobile Dev',  desc:'React Native, Firebase, cross-platform' },
-  { Icon:HiOutlineDesktopComputer, label:'Game Dev',    desc:'Unity, C#, 3D design & gameplay' },
-  { Icon:HiOutlinePuzzle,          label:'UI/UX',       desc:'Figma prototypes & WordPress sites' },
-]
-
-const PLATFORMS = [
-  { Icon:FiLinkedin, href:'https://www.linkedin.com/in/abaid-ul-rehman-6a8bb023a/', label:'LinkedIn', color:'#0a66c2' },
-  { Icon:FiGithub,   href:'https://github.com/abaid-6015',                           label:'GitHub',   color:'#8b5cf6' },
-  { Icon:SiUpwork,   href:'https://www.upwork.com/freelancers/~01c8140c420a8e9157?mp_source=share', label:'Upwork', color:'#6fda44' },
-  { Icon:SiFiverr,   href:'https://www.fiverr.com/abaid_bse',                        label:'Fiverr',   color:'#1dbf73' },
-  { Icon:FiMail,     href:'mailto:abaidbse@gmail.com',                               label:'Email',    color:'#ff9f0a' },
-]
-
-export default function About() {
-  const [ref, v] = useInView()
-  return (
-    <section id="about" className="about">
-      <div className="wrap">
-        <div className={`about__grid ${v?'about__grid--in':''}`} ref={ref}>
-
-          {/* ── Bio tile (tall, left) ── */}
-          <div className="bento about__bio-tile">
-            <div className="about__bio-tag label">About Me</div>
-            <h2 className="heading about__heading">
-              Passionate developer &<br/>creative problem-solver
-            </h2>
-            <p className="about__p">
-              I'm <strong>Abaid-ul-Rehman</strong> — a Software Engineering student at
-              <span className="about__accent"> Gift University, Gujranwala</span> with
-              hands-on experience in full-stack development, mobile apps, game development,
-              and UI/UX design.
-            </p>
-            <p className="about__p">
-              From MERN stack web applications and React Native mobile apps to a Unity 3D game
-              and WordPress client sites — I love building things that are both functional and visually
-              compelling.
-            </p>
-            <p className="about__p">
-              I freelance on <span className="about__accent">Upwork & Fiverr</span>, delivering
-              quality work to clients worldwide, and I'm actively seeking full-time opportunities.
-            </p>
-
-            <div className="about__platforms">
-              {PLATFORMS.map(({ Icon, href, label, color }) => (
-                <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                  className="about__platform" style={{'--pc':color}} title={label}>
-                  <Icon size={15}/> {label}
+import React,{useState,useEffect,useRef} from 'react'
+import {FiGithub,FiLinkedin,FiMail} from 'react-icons/fi'
+import {SiUpwork,SiFiverr} from 'react-icons/si'
+import {getAbout,getSocials,onUpdate} from '../store/dataStore'
+const ICON_MAP={linkedin:FiLinkedin,github:FiGithub,upwork:SiUpwork,fiverr:SiFiverr,mail:FiMail}
+function useInView(){const r=useRef(null);const[v,setV]=useState(false);useEffect(()=>{const o=new IntersectionObserver(([e])=>{if(e.isIntersecting)setV(true)},{threshold:.08});if(r.current)o.observe(r.current);return()=>o.disconnect()},[]);return[r,v]}
+export default function About(){
+  const[ref,v]=useInView()
+  const[about,setAbout]=useState(getAbout)
+  const[socials,setSocials]=useState(getSocials)
+  useEffect(()=>onUpdate(()=>{setAbout(getAbout());setSocials(getSocials())}),[])
+  return(
+    <section id="about" style={{background:'var(--depth)',padding:'100px 0'}}>
+      <div className="wrap" ref={ref} style={{opacity:v?1:0,transform:v?'translateY(0)':'translateY(24px)',transition:'opacity .7s,transform .7s'}}>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 240px',gridTemplateRows:'auto auto',gap:'1.25rem'}}>
+          {/* Bio tile */}
+          <div className="bento" style={{gridRow:'1/3',padding:'2.5rem',display:'flex',flexDirection:'column',gap:'1.25rem'}}>
+            <div className="label">About Me</div>
+            <h2 className="heading">{about.heading?.split('&')[0]}&amp;<span className="grad-text">{about.heading?.split('&')[1]||' problem-solver'}</span></h2>
+            {[about.bio1,about.bio2,about.bio3].filter(Boolean).map((b,i)=>(
+              <p key={i} style={{fontSize:'.95rem',color:'var(--text2)',lineHeight:1.8,maxWidth:'56ch'}}>{b}</p>
+            ))}
+            <div style={{display:'flex',flexWrap:'wrap',gap:'.5rem'}}>
+              {socials.filter(s=>s.show&&s.url).map(s=>{const Icon=ICON_MAP[s.icon]||FiMail;return(
+                <a key={s.id} href={s.url} target="_blank" rel="noopener noreferrer" style={{display:'inline-flex',alignItems:'center',gap:'.4rem',padding:'.35rem .85rem',borderRadius:'100px',fontSize:'.75rem',fontWeight:500,color:'var(--text2)',background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',textDecoration:'none',transition:'all .2s'}} onMouseEnter={e=>{e.currentTarget.style.color='var(--accent2)';e.currentTarget.style.borderColor='rgba(91,79,255,.3)'}} onMouseLeave={e=>{e.currentTarget.style.color='var(--text2)';e.currentTarget.style.borderColor='rgba(255,255,255,.08)'}}>
+                  <Icon size={13}/>{s.platform}
                 </a>
-              ))}
+              )})}
             </div>
-
-            <div className="about__cta">
-              <button className="btn btn-fill"
-                onClick={()=>document.getElementById('contact')?.scrollIntoView({behavior:'smooth'})}>
-                Hire Me
-              </button>
-              <a href="https://github.com/abaid-6015" target="_blank" rel="noopener noreferrer"
-                className="btn btn-ghost">
-                <FiGithub size={15}/> GitHub
-              </a>
+            <div style={{display:'flex',gap:'.75rem',flexWrap:'wrap'}}>
+              <button className="btn btn-fill" onClick={()=>document.getElementById('contact')?.scrollIntoView({behavior:'smooth'})}>Hire Me</button>
+              <a href="https://github.com/abaid-6015" target="_blank" rel="noopener noreferrer" className="btn btn-ghost"><FiGithub size={15}/>GitHub</a>
             </div>
           </div>
-
-          {/* ── Role tiles (right col) ── */}
-          <div className="about__roles">
-            {ROLES.map(({Icon,label,desc},i)=>(
-              <div key={label} className="bento about__role-tile"
-                style={{animationDelay:`${i*.08}s`}}>
-                <div className="about__role-icon"><Icon size={22}/></div>
-                <div className="about__role-label">{label}</div>
-                <div className="about__role-desc">{desc}</div>
+          {/* Role tiles */}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.25rem'}}>
+            {[{icon:'⚛️',label:'Web Dev',desc:'MERN stack, REST APIs'},{icon:'📱',label:'Mobile Dev',desc:'React Native, Firebase'},{icon:'🎮',label:'Game Dev',desc:'Unity, C#, 3D Design'},{icon:'🎨',label:'UI/UX',desc:'Figma, WordPress, CSS'}].map((item,i)=>(
+              <div key={i} className="bento" style={{padding:'1.5rem 1.25rem',display:'flex',flexDirection:'column',gap:'.5rem',cursor:'default'}}>
+                <div style={{fontSize:'1.35rem'}}>{item.icon}</div>
+                <div style={{fontWeight:700,fontSize:'.9rem',color:'var(--text)'}}>{item.label}</div>
+                <div style={{fontSize:'.74rem',color:'var(--text3)',lineHeight:1.5}}>{item.desc}</div>
               </div>
             ))}
           </div>
-
-          {/* ── Info grid tile ── */}
-          <div className="bento about__info-tile">
+          {/* Info tile */}
+          <div className="bento" style={{padding:'1.75rem'}}>
             <div className="label" style={{marginBottom:'1rem'}}>Quick Info</div>
-            <div className="about__info-rows">
-              {[
-                ['Degree',   'B.Sc. Software Engineering'],
-                ['University','Gift University, Gujranwala'],
-                ['Location', 'Gujranwala, Pakistan'],
-                ['Email',    'abaidbse@gmail.com'],
-                ['Phone',    '+92 328 1632432'],
-                ['Status',   '🟢 Open to work'],
-              ].map(([k,v])=>(
-                <div key={k} className="about__info-row">
-                  <span className="about__info-key">{k}</span>
-                  <span className="about__info-val">{v}</span>
+            <div style={{display:'flex',flexDirection:'column',gap:'.7rem'}}>
+              {(about.info||[]).map((row,i)=>(
+                <div key={i} style={{display:'flex',flexDirection:'column',gap:'.12rem'}}>
+                  <span style={{fontFamily:'var(--mono)',fontSize:'.63rem',color:'var(--text3)',letterSpacing:'.08em'}}>{row.label}</span>
+                  <span style={{fontSize:'.8rem',color:'var(--text)',fontWeight:500}}>{row.value}</span>
                 </div>
               ))}
             </div>
           </div>
-
         </div>
       </div>
     </section>

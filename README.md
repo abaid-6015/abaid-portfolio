@@ -1,40 +1,54 @@
-# Abaid-ul-Rehman Portfolio v2
+# Abaid-ul-Rehman Portfolio — v4 FINAL
 
-## 🚀 Deploy to Vercel
+## 🚀 Quick Deploy to Vercel
 
-### Step 1: Push to GitHub
 ```bash
-git add .
-git commit -m "Portfolio v2 — with profile photo, game dev, social links"
-git push origin main
+# 1. Extract zip, enter folder
+cd abaid
+
+# 2. Install dependencies
+npm install
+
+# 3. Test locally
+npm run dev
+
+# 4. Push to GitHub
+git init && git add . && git commit -m "Portfolio v4 final"
+git remote add origin https://github.com/abaid-6015/abaid-portfolio.git
+git push -u origin main
+
+# 5. Go to vercel.com → New Project → Import repo
+# Framework: Vite | Build: npm run build | Output: dist
 ```
 
-### Step 2: Deploy on Vercel
-1. Go to [vercel.com](https://vercel.com) → New Project
-2. Import your GitHub repo (`abaid-portfolio`)
-3. Framework: **Vite**
-4. Build command: `npm run build`
-5. Output directory: `dist`
-6. Click **Deploy**
-
 ## 🔐 Admin Panel
-- Press **Ctrl+Shift+A** anywhere on the site
-- Username: `abaidulrehman`
-- Password: `Abaid6015@()=$`
-- Edit skills, projects, experience from within the panel
+- **Shortcut:** Ctrl + Shift + A
+- **Username:** abaidulrehman
+- **Password:** Abaid6015@()=$
+
+## ✏️ What you can edit from Admin Panel
+| Tab | What changes |
+|-----|-------------|
+| Hero | Name, bio, roles, stats, availability |
+| Socials | Add/remove/toggle all profile links |
+| About | Bio paragraphs, info card rows |
+| Contact | Email, phone, location, Google Script URL |
+| Skills | Add/edit/delete skill groups and levels |
+| Projects | Add/edit/delete + upload screenshots |
+| Experience | Work history entries |
+| Education | Degree entries |
+| Settings | Export/import/reset all data |
+
+## 📸 Project Screenshots
+- Click "Add Photos" on any project card
+- Or use Admin → Projects → 📸 button
+- Multiple images supported, full lightbox viewer
+
+## 📧 Contact Form
+- Already wired to Google Apps Script
+- URL in Admin → Contact → Google Script URL
+- To test: Admin → Contact → Send Test Email
 
 ## 📁 Profile Photo
 - Place your photo at: `public/profile.jpg`
 - Already included in this build
-
-## ✏️ Quick Edits
-- Social links → `src/components/Hero.jsx` & `src/components/Navbar.jsx`
-- Live project links → `src/store/dataStore.js` (or via Admin Panel)
-- Add Fiverr link when available → same files above
-
-## 📦 Stack
-- React 18 + Vite
-- EmailJS (contact form)
-- Framer Motion (animations)
-- React Type Animation
-- MongoDB-ready (contact form logs)
