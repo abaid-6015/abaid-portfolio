@@ -3,7 +3,7 @@ import {SiReact,SiNodedotjs,SiMongodb,SiMysql,SiFirebase,SiJavascript,SiHtml5,Si
 import {DiJava} from 'react-icons/di'
 import {HiOutlineDeviceMobile} from 'react-icons/hi'
 import {getSkills,onUpdate} from '../store/dataStore'
-const ICONS={React:SiReact,'React.js':SiReact,'React Native':SiReact,'Node.js':SiNodedotjs,MongoDB:SiMongodb,MySQL:SiMysql,Firebase:SiFirebase,JavaScript:SiJavascript,HTML5:SiHtml5,'CSS3':SiCss33,Python:SiPython,PHP:SiPhp,WordPress:SiWordpress,Figma:SiFigma,Git:SiGit,Java:DiJava,'Unity 3D':SiUnity,'Mobile Dev':HiOutlineDeviceMobile}
+const ICONS={React:SiReact,'React.js':SiReact,'React Native':SiReact,'Node.js':SiNodedotjs,MongoDB:SiMongodb,MySQL:SiMysql,Firebase:SiFirebase,JavaScript:SiJavascript,HTML5:SiHtml5,'CSS3':SiCss3,Python:SiPython,PHP:SiPhp,WordPress:SiWordpress,Figma:SiFigma,Git:SiGit,Java:DiJava,'Unity 3D':SiUnity,'Mobile Dev':HiOutlineDeviceMobile}
 function useInView(){const r=useRef(null);const[v,setV]=useState(false);useEffect(()=>{const o=new IntersectionObserver(([e])=>{if(e.isIntersecting)setV(true)},{threshold:.06});if(r.current)o.observe(r.current);return()=>o.disconnect()},[]);return[r,v]}
 function Bar({pct,color,active}){const[w,setW]=useState(0);useEffect(()=>{if(active){const t=setTimeout(()=>setW(pct),200);return()=>clearTimeout(t)}},[active,pct]);return(<div style={{height:'3px',background:'rgba(255,255,255,.06)',borderRadius:'2px',overflow:'hidden'}}><div style={{height:'100%',background:color,borderRadius:'2px',width:`${w}%`,boxShadow:`0 0 10px ${color}55`,transition:'width 1s cubic-bezier(.4,0,.2,1)'}}/></div>)}
 export default function Skills(){

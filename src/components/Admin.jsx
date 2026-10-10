@@ -156,9 +156,9 @@ function ContactPanel(){
   const persist=(next)=>{setD(next);saveContact(next);setSaved(true);setTimeout(()=>setSaved(false),2000)}
   const upd=(k,v)=>persist({...d,[k]:v})
   const test=async()=>{
-    if(!d.scriptUrl||d.scriptUrl.includes('PASTE'))return alert('Enter your Google Script URL first')
+    if(!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec(?:\?.*)?$/.test((d.scriptUrl||'').trim()))return alert('Enter a valid Google Apps Script /exec URL first')
     setTs('sending')
-    try{await fetch(d.scriptUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Admin Test',email:d.email,subject:'Test from Admin Panel',message:'✅ Your contact form is working correctly!'})});setTs('ok');setTimeout(()=>setTs('idle'),4000)}
+    try{await fetch(d.scriptUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({name:'Admin Test',email:d.email,subject:'Test from Admin Panel',message:'✅ Your contact form is working correctly!'})});setTs('ok');setTimeout(()=>setTs('idle'),4000)}
     catch{setTs('err');setTimeout(()=>setTs('idle'),4000)}
   }
   return(
@@ -173,7 +173,7 @@ function ContactPanel(){
       <div><label style={lbl_s}>Location</label><input style={inp_s} value={d.location} onChange={e=>upd('location',e.target.value)}/></div>
       <div><label style={lbl_s}>Google Apps Script URL</label><input style={inp_s} value={d.scriptUrl} onChange={e=>upd('scriptUrl',e.target.value)} placeholder="https://script.google.com/macros/s/.../exec"/><p style={{fontSize:'.7rem',color:'#4a5568',marginTop:'.4rem'}}>All contact form messages are sent to this URL</p></div>
       <button type="button" onClick={test} style={{...btn_sm,color:ts==='ok'?'#30D158':ts==='err'?'#FF375F':'#00E5FF',borderColor:ts==='ok'?'rgba(48,209,88,.3)':ts==='err'?'rgba(255,55,95,.3)':'rgba(0,229,255,.25)',background:ts==='ok'?'rgba(48,209,88,.1)':ts==='err'?'rgba(255,55,95,.1)':'rgba(0,229,255,.1)',alignSelf:'flex-start',padding:'.7rem 1.4rem'}}>
-        {ts==='idle'&&'📧 Send Test Email'}{ts==='sending'&&'⏳ Sending...'}{ts==='ok'&&'✅ Test Sent! Check inbox'}{ts==='err'&&'❌ Failed — check URL'}
+        {ts==='idle'&&'📧 Send Test Email'}{ts==='sending'&&'⏳ Sending...'}{ts==='ok'&&'✅ Test submitted — check inbox'}{ts==='err'&&'❌ Failed — check URL'}
       </button>
     </div>
   )

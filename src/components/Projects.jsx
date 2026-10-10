@@ -5,7 +5,7 @@ import {DiJava} from 'react-icons/di'
 import {HiOutlineGlobeAlt,HiOutlineCube,HiOutlineDesktopComputer,HiOutlineServer,HiOutlineAcademicCap,HiOutlinePencil,HiOutlineCollection} from 'react-icons/hi'
 import {getProjects,onUpdate,getProjectImages,saveProjectImage,deleteProjectImage} from '../store/dataStore'
 
-const TECH_ICONS={'React.js':SiReact,'React Native':SiReact,MongoDB:SiMongodb,'Node.js':SiNodedotjs,MySQL:SiMysql,Firebase:SiFirebase,Unity:SiUnity,WordPress:SiWordpress,Figma:SiFigma,PHP:SiPhp,Python:SiPython,Java:DiJava,JavaScript:SiJavascript,'CSS3':SiCss33,'HTML5':SiHtml5}
+const TECH_ICONS={'React.js':SiReact,'React Native':SiReact,MongoDB:SiMongodb,'Node.js':SiNodedotjs,MySQL:SiMysql,Firebase:SiFirebase,Unity:SiUnity,WordPress:SiWordpress,Figma:SiFigma,PHP:SiPhp,Python:SiPython,Java:DiJava,JavaScript:SiJavascript,'CSS3':SiCss3,'HTML5':SiHtml5}
 const TYPE_ICONS={'Web + Mobile':HiOutlineGlobeAlt,'Desktop App':HiOutlineDesktopComputer,'WebGL · 3D':HiOutlineCube,'Game Dev':HiOutlineCube,'Web App':HiOutlineServer,'Networking':HiOutlineAcademicCap,'Design':HiOutlinePencil,'WordPress':HiOutlineGlobeAlt}
 
 const toBase64=(file)=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})

@@ -15,11 +15,21 @@ export default function Contact(){
   useEffect(()=>onUpdate(()=>{setCd(getContact());setSocials(getSocials())}),[])
   const handle=e=>setForm(p=>({...p,[e.target.name]:e.target.value}))
   const submit=async e=>{
-    e.preventDefault();if(!form.name||!form.email||!form.message)return;setStatus('sending')
+    e.preventDefault()
+    if(!e.currentTarget.reportValidity()||!form.name.trim()||!form.message.trim())return
+    // An opaque no-cors response cannot confirm Gmail delivery. Do not claim "sent".
+    if(!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec(?:\?.*)?$/.test((cd.scriptUrl||'').trim())){
+      setStatus('unconfigured')
+      return
+    }
+    setStatus('sending')
     try{
-      await fetch(cd.scriptUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:form.name,email:form.email,subject:form.subject||'Portfolio Contact',message:form.message})})
-      setStatus('success');setForm({name:'',email:'',subject:'',message:''});setTimeout(()=>setStatus('idle'),5000)
-    }catch{setStatus('error');setTimeout(()=>setStatus('idle'),5000)}
+      await fetch(cd.scriptUrl.trim(),{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({name:form.name.trim(),email:form.email.trim(),subject:form.subject||'Portfolio Contact',message:form.message.trim()})})
+      // The browser accepted the request, but no-cors does not expose server status.
+      setStatus('submitted')
+    }catch{
+      setStatus('error')
+    }
   }
   const fixedCh=[
     {Icon:FiMail,label:'Email',value:cd.email,href:`mailto:${cd.email}`,color:'#5B4FFF'},
@@ -62,7 +72,7 @@ export default function Contact(){
           </div>
           {/* Form */}
           <div className="bento" style={{padding:'2rem'}}>
-            <form onSubmit={submit} noValidate style={{display:'flex',flexDirection:'column',gap:'1.25rem'}}>
+            <form onSubmit={submit} style={{display:'flex',flexDirection:'column',gap:'1.25rem'}}>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.25rem'}}>
                 {[['name','Name','text'],['email','Email','email']].map(([nm,lbl,type])=>(
                   <div key={nm} style={fieldStyle(nm)}>
@@ -82,15 +92,15 @@ export default function Contact(){
                   <div style={{position:'absolute',bottom:0,left:0,height:'1px',width:focused===nm||form[nm]?'100%':'0',background:'var(--accent)',transition:'width .3s'}}/>
                 </div>
               ))}
-              <button type="submit" disabled={status==='sending'} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'.5rem',padding:'.875rem',borderRadius:'12px',fontFamily:'var(--sans)',fontSize:'.85rem',fontWeight:600,cursor:'none',border:'none',background:status==='success'?'#30D158':status==='error'?'#FF375F':'var(--accent)',color:'#fff',transition:'all .25s'}}>
+              <button type="submit" disabled={status==='sending'} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'.5rem',padding:'.875rem',borderRadius:'12px',fontFamily:'var(--sans)',fontSize:'.85rem',fontWeight:600,cursor:'none',border:'none',background:status==='submitted'?'#30D158':(status==='error'||status==='unconfigured')?'#FF375F':'var(--accent)',color:'#fff',transition:'all .25s'}}>
                 {status==='idle'&&<><FiSend size={15}/> Send Message</>}
                 {status==='sending'&&<><span style={{animation:'spin 1s linear infinite',display:'inline-block'}}>⟳</span> Sending...</>}
-                {status==='success'&&<>✓ Message Sent!</>}
-                {status==='error'&&<>✕ Failed — try again</>}
+                {status==='submitted'&&<>✓ Request Submitted</>}
+                {(status==='error'||status==='unconfigured')&&<>✕ Unable to Send</>}
               </button>
               <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-              {status==='success'&&<div style={{padding:'.75rem 1rem',borderRadius:'8px',background:'rgba(48,209,88,.1)',border:'1px solid rgba(48,209,88,.25)',color:'#30D158',fontSize:'.82rem'}}>Your message was sent! I'll reply to {cd.email} shortly.</div>}
-              {status==='error'&&<div style={{padding:'.75rem 1rem',borderRadius:'8px',background:'rgba(255,55,95,.1)',border:'1px solid rgba(255,55,95,.25)',color:'#FF375F',fontSize:'.82rem'}}>Something went wrong. Email: <a href={`mailto:${cd.email}`} style={{color:'var(--accent2)'}}>{cd.email}</a></div>}
+              {status==='submitted'&&<div style={{padding:'.75rem 1rem',borderRadius:'8px',background:'rgba(48,209,88,.1)',border:'1px solid rgba(48,209,88,.25)',color:'#30D158',fontSize:'.82rem'}}>Your message was submitted to the email service. Delivery cannot be verified here. If you don't receive a reply, please email {cd.email} directly.</div>}
+              {(status==='error'||status==='unconfigured')&&<div style={{padding:'.75rem 1rem',borderRadius:'8px',background:'rgba(255,55,95,.1)',border:'1px solid rgba(255,55,95,.25)',color:'#FF375F',fontSize:'.82rem'}}>{status==='unconfigured'?'The contact email service is not configured.':'Something went wrong. Please use email instead.'} Email: <a href={`mailto:${cd.email}`} style={{color:'var(--accent2)'}}>{cd.email}</a></div>}
             </form>
           </div>
         </div>
